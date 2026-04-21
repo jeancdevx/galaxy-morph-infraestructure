@@ -1,0 +1,65 @@
+# macOS/Linux/Editor
+.DS_Store
+Thumbs.db
+*.swp
+*.swo
+.vscode/
+.idea/
+
+# Logs
+*.log
+logs/
+
+# Environment and local secrets
+.env
+.env.*
+!.env.example
+
+# Node / TypeScript
+node_modules/
+dist/
+build/
+coverage/
+.nyc_output/
+.npm/
+.pnpm-store/
+*.tsbuildinfo
+
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+.pytest_cache/
+.venv/
+venv/
+
+# Terraform
+**/.terraform/*
+*.tfstate
+*.tfstate.*
+*.tfvars
+*.tfvars.json
+!.auto.tfvars.example
+!.terraform.tfvars.example
+crash.log
+crash.*.log
+override.tf
+override.tf.json
+*_override.tf
+*_override.tf.json
+.terraformrc
+terraform.rc
+
+# Terraform lock file
+# Keep this tracked if you want provider version pinning per platform.
+# .terraform.lock.hcl
+
+# Serverless / Lambda build artifacts
+.aws-sam/
+.serverless/
+*.zip
+
+# Test artifacts
+junit.xml
+report.xml
