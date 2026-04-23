@@ -26,6 +26,7 @@ No incluye aun:
 - [docs/galaxy_morph_architecture_knowledge.md](docs/galaxy_morph_architecture_knowledge.md): base de decisiones y contexto tecnico.
 - [docs/project_execution_flow.md](docs/project_execution_flow.md): flujo completo del proyecto, etapas y servicios.
 - [docs/contribution_workflow.md](docs/contribution_workflow.md): convenciones de contribucion, commits y PR.
+- [docs/implementation_roadmap.md](docs/implementation_roadmap.md): roadmap quincenal con owners, entregables y Definition of Done por etapa.
 
 ## Convenciones de Trabajo
 - Estrategia de ramas: GitFlow.
@@ -42,4 +43,4 @@ No incluye aun:
 - Entornos activos: `dev` y `prod`.
 
 ## Siguiente Paso
-Implementar archivos base de Terraform en bootstrap, entornos y modulos con validaciones de CI.
+Ejecutar la Q2 del roadmap: bootstrap de estado remoto Terraform, bloqueo de estado y validacion en CI.
