@@ -3,3 +3,28 @@ aws_profile = "your-sso-profile"
 
 project_name = "galaxy-morph"
 environment  = "dev"
+
+vpc_cidr_block       = "10.20.0.0/16"
+availability_zones   = ["us-east-2a", "us-east-2b"]
+public_subnet_cidrs  = ["10.20.1.0/24", "10.20.2.0/24"]
+private_subnet_cidrs = ["10.20.11.0/24", "10.20.12.0/24"]
+enable_nat_gateway   = true
+
+msk_port             = 9098
+sagemaker_https_port = 443
+
+enable_s3_gateway_endpoint                  = true
+enable_dynamodb_gateway_endpoint            = true
+enable_sqs_interface_endpoint               = true
+enable_sagemaker_runtime_interface_endpoint = true
+enable_private_dns                          = true
+
+jobs_table_name         = "galaxy-morph-jobs"
+images_bucket_name      = "galaxy-morph-images"
+checkpoints_bucket_name = "galaxy-morph-checkpoints"
+models_bucket_name      = "galaxy-morph-models"
+raw_bucket_name         = "galaxy-morph-raw"
+
+# Replace with concrete ARNs once AppSync API and MSK cluster exist.
+appsync_api_arn = "*"
+msk_cluster_arn = "*"
