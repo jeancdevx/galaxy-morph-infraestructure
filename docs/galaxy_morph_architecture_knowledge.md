@@ -1,5 +1,6 @@
 # GalaxyMorph — Knowledge Base Completa de Arquitectura AWS
 **Generado:** 2026-04-16 | **Conversación:** 0a10e8ea-0c89-4719-a7a7-5dc3aa7eef49
+**Actualizado:** 2026-04-23 | **Estado:** Decisiones de IaC/región/scope alineadas al repositorio actual
 
 ---
 
@@ -233,7 +234,7 @@ El checkpoint en S3 garantiza at-least-once processing si EMR se reinicia.
 | Parámetro | Valor |
 |-----------|-------|
 | Tipo | Real-Time Endpoint |
-| Instancias | ml.g4dn.xlarge (GPU) — pendiente confirmar vs CPU |
+| Instancias | ml.g4dn.xlarge (GPU) |
 | Min instancias | 2 (alta disponibilidad) |
 | Max instancias | 50 |
 | Auto Scaling metric | SageMakerVariantInvocationsPerInstance |
@@ -370,10 +371,10 @@ La imagen se renderiza con `<img src={imageUrl}>` en el browser. La imagen NO vi
 
 | Subnet | AZ | CIDR | Contiene |
 |--------|-----|------|----------|
-| Public A | us-east-1a | 10.0.1.0/24 | NAT Gateway |
-| Public B | us-east-1b | 10.0.2.0/24 | NAT Gateway (HA) |
-| Private A | us-east-1a | 10.0.11.0/24 | MSK, Lambda, EMR |
-| Private B | us-east-1b | 10.0.12.0/24 | MSK, Lambda, EMR |
+| Public A | us-east-2a | 10.0.1.0/24 | NAT Gateway |
+| Public B | us-east-2b | 10.0.2.0/24 | NAT Gateway (HA) |
+| Private A | us-east-2a | 10.0.11.0/24 | MSK, Lambda, EMR |
+| Private B | us-east-2b | 10.0.12.0/24 | MSK, Lambda, EMR |
 
 **Security Groups:**
 | SG | Permite entrada desde | Puerto |
@@ -388,6 +389,8 @@ La imagen se renderiza con `<img src={imageUrl}>` en el browser. La imagen NO vi
 - DynamoDB Gateway Endpoint (gratis)
 - SageMaker Runtime Interface Endpoint
 - SQS Interface Endpoint
+
+**Nota de estado:** Security Groups y VPC Endpoints siguen siendo requerimientos de arquitectura. En el repositorio ya se inició implementación de red base en desarrollo (módulo VPC), pero estos componentes aún no están cerrados en producción.
 
 ---
 
@@ -562,14 +565,14 @@ S3 Buckets
 
 ---
 
-## 8. Decisiones Pendientes (sin resolver aún)
+## 8. Decisiones de Implementación (actualizadas)
 
 | # | Decisión | Opciones | Status |
 |---|----------|----------|--------|
-| 1 | IaC | Terraform vs AWS CDK | ⏳ Pendiente |
-| 2 | SageMaker instance | ml.g4dn.xlarge (GPU, ~$0.74/hr) vs ml.c5.2xlarge (CPU, ~$0.48/hr) | ⏳ Pendiente |
-| 3 | Región AWS | us-east-1 (recomendado) o us-west-2 | ⏳ Pendiente |
-| 4 | Pipeline de telescopios | ¿Incluir en scope inicial? FITS files → Lambda pre-proc → SQS → MSK | ⏳ Pendiente |
+| 1 | IaC | Terraform vs AWS CDK | ✅ Terraform elegido |
+| 2 | SageMaker instance | ml.g4dn.xlarge (GPU) vs ml.c5.2xlarge (CPU) | ✅ GPU (ml.g4dn.xlarge) |
+| 3 | Región AWS | us-east-1 o us-west-2 | ✅ us-east-2 |
+| 4 | Pipeline de telescopios | ¿Incluir en scope inicial? FITS files → Lambda pre-proc → SQS → MSK | ✅ Fuera de scope inicial |
 | 5 | Frontend framework | React, Next.js, u otro | ⏳ Pendiente |
 
 ---
@@ -594,8 +597,8 @@ S3 Buckets
 
 - Frontend (SPA)
 - Backend / API (Lambdas)
-- Infraestructura AWS (ningún recurso creado aún)
-- Repositorio de infraestructura: `/home/jeancdevx/dev/galaxy-morph/galaxy-morph-infraestructure` (solo tiene README.md)
+- Infraestructura AWS completa (la implementación está en progreso por fases)
+- Repositorio de infraestructura ya inicializado con estructura de Terraform, bootstrap de estado remoto y raíz de entornos dev/prod
 
 El modelo CNN PyTorch sí existe (resultado de la tesis), debe ser empaquetado como SageMaker Model.
 
