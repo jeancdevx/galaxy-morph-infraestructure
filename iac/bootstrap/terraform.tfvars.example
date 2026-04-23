@@ -1,0 +1,10 @@
+aws_region  = "us-east-2"
+aws_profile = "your-sso-profile"
+
+project_name = "galaxy-morph"
+environment  = "bootstrap"
+
+# Optional: set only if you need a specific pre-defined bucket name
+# state_bucket_name_override = "your-unique-tfstate-bucket-name"
+
+state_lock_table_name = "galaxy-morph-terraform-locks"
