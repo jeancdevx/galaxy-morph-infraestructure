@@ -58,3 +58,10 @@ module "iam" {
   appsync_api_arn = var.appsync_api_arn
   msk_cluster_arn = var.msk_cluster_arn
 }
+
+module "cognito" {
+  source = "../../modules/cognito"
+
+  name_prefix       = "${var.project_name}-${var.environment}"
+  app_email_subject = var.project_name
+}
