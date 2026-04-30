@@ -24,3 +24,13 @@ resource "aws_vpc_security_group_ingress_rule" "msk_from_msk_connect" {
   ip_protocol                  = "tcp"
   description                  = "Allow MSK Connect SG to connect to MSK"
 }
+
+# Allow MSK SG to reference itself for admin tooling like Kafka Tool, etc.
+resource "aws_vpc_security_group_ingress_rule" "msk_self" {
+  security_group_id            = aws_security_group.msk.id
+  referenced_security_group_id = aws_security_group.msk.id
+  from_port                    = var.msk_port
+  to_port                      = var.msk_port
+  ip_protocol                  = "tcp"
+  description                  = "Allow MSK SG self-reference for admin tooling"
+}
