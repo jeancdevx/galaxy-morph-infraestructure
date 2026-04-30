@@ -6,13 +6,18 @@ data "aws_iam_policy_document" "msk_connect_execution" {
       "kafka-cluster:Connect",
       "kafka-cluster:DescribeCluster",
       "kafka-cluster:DescribeTopic",
+      "kafka-cluster:CreateTopic",
       "kafka-cluster:ReadData",
       "kafka-cluster:WriteData",
       "kafka-cluster:AlterGroup",
       "kafka-cluster:DescribeGroup",
     ]
 
-    resources = [var.msk_cluster_arn]
+    resources = [
+      var.msk_cluster_arn,
+      "arn:aws:kafka:${var.aws_region}:${var.aws_account_id}:topic/*/*/*",
+      "arn:aws:kafka:${var.aws_region}:${var.aws_account_id}:group/*/*/*"
+    ]
   }
 
   statement {
@@ -26,7 +31,17 @@ data "aws_iam_policy_document" "msk_connect_execution" {
       "sqs:ChangeMessageVisibility",
     ]
 
-    resources = ["*"]
+    resources = [var.ingestion_queue_arn]
+  }
+
+  statement {
+    sid = "SQSList"
+
+    actions = [
+      "sqs:ListQueues"
+    ]
+
+    resources = ["arn:aws:sqs:${var.aws_region}:${var.aws_account_id}:*"]
   }
 
   statement {
@@ -39,6 +54,18 @@ data "aws_iam_policy_document" "msk_connect_execution" {
     ]
 
     resources = ["*"]
+  }
+
+  statement {
+    sid = "S3PluginRead"
+
+    actions = [
+      "s3:GetObject",
+    ]
+
+    resources = [
+      "arn:aws:s3:::${var.raw_bucket_name}/*"
+    ]
   }
 }
 
