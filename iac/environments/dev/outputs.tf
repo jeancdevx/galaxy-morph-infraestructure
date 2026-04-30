@@ -82,3 +82,58 @@ output "msk_connect_execution_role_arn" {
   description = "Development MSK Connect execution role ARN"
   value       = module.iam.msk_connect_execution_role_arn
 }
+
+output "jobs_table_name" {
+  description = "Development DynamoDB jobs table name"
+  value       = module.data_layer.jobs_table_name
+}
+
+output "jobs_table_arn" {
+  description = "Development DynamoDB jobs table ARN"
+  value       = module.data_layer.jobs_table_arn
+}
+
+output "ingestion_queue_name" {
+  description = "Development SQS ingestion queue name"
+  value       = module.data_layer.ingestion_queue_name
+}
+
+output "ingestion_queue_arn" {
+  description = "Development SQS ingestion queue ARN"
+  value       = module.data_layer.ingestion_queue_arn
+}
+
+output "ingestion_dlq_name" {
+  description = "Development SQS ingestion DLQ name"
+  value       = module.data_layer.ingestion_dlq_name
+}
+
+output "ingestion_dlq_arn" {
+  description = "Development SQS ingestion DLQ ARN"
+  value       = module.data_layer.ingestion_dlq_arn
+}
+
+output "data_layer_msk_cluster_name" {
+  description = "Development MSK Serverless cluster name"
+  value       = module.data_layer.msk_cluster_name
+}
+
+output "data_layer_msk_cluster_arn" {
+  description = "Development MSK Serverless cluster ARN"
+  value       = module.data_layer.msk_cluster_arn
+}
+
+output "data_layer_msk_bootstrap_brokers_sasl_iam" {
+  description = "Development MSK IAM bootstrap brokers"
+  value       = module.data_layer.msk_bootstrap_brokers_sasl_iam
+}
+
+output "msk_connect_connector_name" {
+  description = "Development MSK Connect connector name"
+  value       = module.data_layer.msk_connect_connector_name
+}
+
+output "msk_connect_connector_arn" {
+  description = "Development MSK Connect connector ARN"
+  value       = module.data_layer.msk_connect_connector_arn
+}
