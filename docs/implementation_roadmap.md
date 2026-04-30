@@ -111,18 +111,20 @@ Definir un plan de ejecucion secuencial, con entregables verificables por etapa,
 - Versionado de modelo y proceso de rollback documentado.
 - Cost baseline de inferencia reportado.
 
-### Q8 (Semanas 15-16) - Lambdas API y Dispatcher
+### Q8 (Semanas 15-16) - Lambdas API, Dispatcher y Auth
 **Owner principal:** BE
 
 **Entregables:**
 - Lambdas de API y results_dispatcher en TypeScript.
 - Integracion con AppSync/API Gateway segun flujo definido.
 - Uso de Powertools (Logger, Tracer, Metrics) en Lambdas.
+- Cognito User Pool, App Clients y flujos de autenticacion integrados con API.
 
 **DoD:**
 - Flujo request -> procesamiento -> respuesta realtime validado.
 - Logs estructurados y trazas visibles por request.
 - Cobertura minima de pruebas unitarias acordada.
+- Flujo signup/signin/refresh con JWT validado de extremo a extremo.
 
 ### Q9 (Semanas 17-18) - CI/CD Integral
 **Owner principal:** PE + BE + DE + MLE
@@ -181,7 +183,7 @@ Definir un plan de ejecucion secuencial, con entregables verificables por etapa,
 - Q3 y Q4 dependen de Q2.
 - Q5 depende de Q3 y Q4.
 - Q6 y Q7 dependen de Q5.
-- Q8 depende de Q6 y Q7.
+- Q8 depende de Q4, Q6 y Q7.
 - Q9 depende de Q8.
 - Q10-Q12 dependen de Q9.
 
@@ -204,3 +206,7 @@ Definir un plan de ejecucion secuencial, con entregables verificables por etapa,
 - Tasa de rollback por release.
 - MTTD y MTTR de incidentes en dev/prod.
 - Costo por 1,000 clasificaciones procesadas.
+
+## Backlog Fuera de Fase Actual
+- Edge frontend de produccion con CloudFront + Route53.
+- Perimetro avanzado con WAF y tuning de reglas por trafico real.
