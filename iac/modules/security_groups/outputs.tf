@@ -22,3 +22,8 @@ output "sagemaker_endpoint_sg_id" {
   description = "SageMaker endpoint security group ID"
   value       = aws_security_group.sagemaker_endpoint.id
 }
+
+output "vpc_endpoints_sg_id" {
+  description = "VPC Endpoints security group ID"
+  value       = aws_security_group.vpc_endpoints.id
+}

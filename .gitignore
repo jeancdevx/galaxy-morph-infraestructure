@@ -65,3 +65,5 @@ terraform.rc
 # Test artifacts
 junit.xml
 report.xml
+results.xml
+kafka

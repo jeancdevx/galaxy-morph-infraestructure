@@ -22,3 +22,13 @@ output "msk_connect_execution_role_arn" {
   description = "MSK Connect execution role ARN"
   value       = aws_iam_role.msk_connect_execution.arn
 }
+
+output "kafka_ui_task_role_arn" {
+  description = "ARN of the IAM role used by Kafka UI ECS Task"
+  value       = aws_iam_role.kafka_ui_task.arn
+}
+
+output "kafka_ui_execution_role_arn" {
+  description = "ARN of the IAM role used by Kafka UI ECS Execution"
+  value       = aws_iam_role.kafka_ui_execution.arn
+}

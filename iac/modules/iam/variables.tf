@@ -54,3 +54,9 @@ variable "msk_cluster_arn" {
   type        = string
   default     = "*"
 }
+
+variable "ingestion_queue_arn" {
+  description = "SQS ingestion queue ARN used by MSK Connect"
+  type        = string
+  default     = "*"
+}

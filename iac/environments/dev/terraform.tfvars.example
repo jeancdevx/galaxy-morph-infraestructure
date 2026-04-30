@@ -20,11 +20,39 @@ enable_sagemaker_runtime_interface_endpoint = true
 enable_private_dns                          = true
 
 jobs_table_name         = "galaxy-morph-jobs"
+jobs_table_hash_key     = "pk"
+jobs_table_range_key    = "sk"
+enable_jobs_table_pitr  = true
+
+ingestion_queue_name                      = "galaxy-morph-ingestion"
+ingestion_dlq_name                        = "galaxy-morph-ingestion-dlq"
+ingestion_queue_visibility_timeout_seconds = 120
+ingestion_queue_message_retention_seconds  = 345600
+ingestion_queue_max_receive_count          = 5
+
+ingestion_topic_name            = "galaxy.ingestion"
+results_topic_name              = "galaxy.results"
+kafka_topic_partitions          = 50
+kafka_topic_replication_factor  = 3
+kafka_ingestion_retention_ms    = 604800000
+kafka_results_retention_ms      = 259200000
+
+enable_msk_connect_connector    = false
+msk_connect_custom_plugin_arn   = null
+msk_connect_custom_plugin_revision = null
+msk_connect_kafkaconnect_version = "2.7.1"
+msk_connect_mcu_count           = 1
+msk_connect_min_worker_count    = 2
+msk_connect_max_worker_count    = 10
+msk_connect_tasks_max           = 16
+msk_connect_log_retention_days  = 14
+
+msk_cluster_name = null
+
 images_bucket_name      = "galaxy-morph-images"
 checkpoints_bucket_name = "galaxy-morph-checkpoints"
 models_bucket_name      = "galaxy-morph-models"
 raw_bucket_name         = "galaxy-morph-raw"
 
-# Replace with concrete ARNs once AppSync API and MSK cluster exist.
+# Replace with concrete ARN once AppSync API exists.
 appsync_api_arn = "*"
-msk_cluster_arn = "*"
