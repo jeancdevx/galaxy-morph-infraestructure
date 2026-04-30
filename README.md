@@ -44,3 +44,6 @@ No incluye aun:
 
 ## Siguiente Paso
 Ejecutar la Q2 del roadmap: bootstrap de estado remoto Terraform, bloqueo de estado y validacion en CI.
+
+docker pull bridgecrew/checkov:3
+docker run --rm -v ./iac:/tf --workdir /tf bridgecrew/checkov:3 --directory /tf -o junitxml --output-file-path results.xml
