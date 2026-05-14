@@ -21,20 +21,20 @@ resource "aws_mskconnect_connector" "sqs_source" {
   }
 
   connector_configuration = {
-    "connector.class"                             = "org.apache.camel.kafkaconnector.aws2sqs.CamelAws2sqsSourceConnector"
-    "tasks.max"                                   = tostring(var.tasks_max)
-    "topics"                                      = var.ingestion_topic_name
-    "camel.source.path.queueNameOrArn"            = var.ingestion_queue_arn
-    "camel.source.endpoint.region"                = var.aws_region
+    "connector.class"                                     = "org.apache.camel.kafkaconnector.aws2sqs.CamelAws2sqsSourceConnector"
+    "tasks.max"                                           = tostring(var.tasks_max)
+    "topics"                                              = var.ingestion_topic_name
+    "camel.source.path.queueNameOrArn"                    = var.ingestion_queue_arn
+    "camel.source.endpoint.region"                        = var.aws_region
     "camel.source.endpoint.useDefaultCredentialsProvider" = "true"
-    "camel.source.endpoint.deleteAfterRead"       = "true"
-    "camel.source.endpoint.maxMessagesPerPoll"    = "10"
-    "value.converter"                             = "org.apache.kafka.connect.storage.StringConverter"
-    "key.converter"                               = "org.apache.kafka.connect.storage.StringConverter"
-    "behavior.on.error"                           = "log"
-    "errors.tolerance"                            = "all"
-    "errors.log.enable"                           = "true"
-    "errors.log.include.messages"                 = "true"
+    "camel.source.endpoint.deleteAfterRead"               = "true"
+    "camel.source.endpoint.maxMessagesPerPoll"            = "10"
+    "value.converter"                                     = "org.apache.kafka.connect.storage.StringConverter"
+    "key.converter"                                       = "org.apache.kafka.connect.storage.StringConverter"
+    "behavior.on.error"                                   = "log"
+    "errors.tolerance"                                    = "all"
+    "errors.log.enable"                                   = "true"
+    "errors.log.include.messages"                         = "true"
   }
 
   kafka_cluster {
