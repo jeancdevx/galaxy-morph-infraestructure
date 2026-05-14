@@ -43,6 +43,20 @@ output "msk_cluster_arn" {
   value       = module.msk.msk_cluster_arn
 }
 
+locals {
+  _msk_arn_base = regex("^(arn:aws:kafka:[^:]+:[^:]+):cluster/([^/]+)/.*$", module.msk.msk_cluster_arn)
+}
+
+output "msk_topic_arn_prefix" {
+  description = "ARN prefix for MSK topics used in IAM policies"
+  value       = "${local._msk_arn_base[0]}:topic/${local._msk_arn_base[1]}/*"
+}
+
+output "msk_group_arn_prefix" {
+  description = "ARN prefix for MSK consumer groups used in IAM policies"
+  value       = "${local._msk_arn_base[0]}:group/${local._msk_arn_base[1]}/*"
+}
+
 output "msk_bootstrap_brokers_sasl_iam" {
   description = "MSK Serverless IAM bootstrap brokers"
   value       = module.msk.msk_bootstrap_brokers_sasl_iam

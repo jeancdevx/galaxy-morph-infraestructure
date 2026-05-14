@@ -55,19 +55,38 @@ data "aws_iam_policy_document" "emr_serverless" {
   }
 
   statement {
-    sid = "MSKIAMAuth"
+    sid = "MSKIAMCluster"
 
     actions = [
       "kafka-cluster:Connect",
       "kafka-cluster:DescribeCluster",
+    ]
+
+    resources = [var.msk_cluster_arn]
+  }
+
+  statement {
+    sid = "MSKIAMTopics"
+
+    actions = [
       "kafka-cluster:DescribeTopic",
       "kafka-cluster:ReadData",
       "kafka-cluster:WriteData",
+      "kafka-cluster:CreateTopic",
+    ]
+
+    resources = [var.msk_topic_arn_prefix]
+  }
+
+  statement {
+    sid = "MSKIAMGroups"
+
+    actions = [
       "kafka-cluster:AlterGroup",
       "kafka-cluster:DescribeGroup",
     ]
 
-    resources = [var.msk_cluster_arn]
+    resources = [var.msk_group_arn_prefix]
   }
 
   statement {
@@ -77,6 +96,8 @@ data "aws_iam_policy_document" "emr_serverless" {
       "logs:CreateLogGroup",
       "logs:CreateLogStream",
       "logs:PutLogEvents",
+      "logs:DescribeLogGroups",
+      "logs:DescribeLogStreams",
     ]
 
     resources = ["*"]
