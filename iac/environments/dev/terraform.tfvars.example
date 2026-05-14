@@ -32,8 +32,8 @@ ingestion_queue_max_receive_count          = 5
 
 ingestion_topic_name            = "galaxy.ingestion"
 results_topic_name              = "galaxy.results"
-kafka_topic_partitions          = 50
-kafka_topic_replication_factor  = 3
+kafka_topic_partitions          = 24
+kafka_topic_replication_factor  = 2
 kafka_ingestion_retention_ms    = 604800000
 kafka_results_retention_ms      = 259200000
 
@@ -48,6 +48,21 @@ msk_connect_tasks_max           = 16
 msk_connect_log_retention_days  = 14
 
 msk_cluster_name = null
+
+emr_enable_initial_capacity       = false
+emr_release_label                 = "emr-7.13.0"
+emr_serverless_log_prefix         = "emr-serverless/logs"
+emr_log_retention_days            = 14
+emr_idle_timeout_minutes          = 15
+emr_initial_driver_worker_count   = 1
+emr_initial_driver_cpu            = "2 vCPU"
+emr_initial_driver_memory         = "4 GB"
+emr_initial_executor_worker_count = 6
+emr_initial_executor_cpu          = "2 vCPU"
+emr_initial_executor_memory       = "4 GB"
+emr_maximum_cpu                   = "1000 vCPU"
+emr_maximum_memory                = "8000 GB"
+emr_maximum_disk                  = "20000 GB"
 
 images_bucket_name      = "galaxy-morph-images"
 checkpoints_bucket_name = "galaxy-morph-checkpoints"

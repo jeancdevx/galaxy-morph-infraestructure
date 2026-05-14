@@ -202,13 +202,13 @@ variable "results_topic_name" {
 variable "kafka_topic_partitions" {
   description = "Expected Kafka topic partitions count"
   type        = number
-  default     = 50
+  default     = 24
 }
 
 variable "kafka_topic_replication_factor" {
   description = "Expected Kafka topic replication factor"
   type        = number
-  default     = 3
+  default     = 2
 }
 
 variable "kafka_ingestion_retention_ms" {
@@ -293,4 +293,88 @@ variable "msk_cluster_arn" {
   description = "MSK cluster ARN used by streaming components"
   type        = string
   default     = "*"
+}
+
+variable "emr_release_label" {
+  description = "EMR Serverless release label"
+  type        = string
+  default     = "emr-6.15.0"
+}
+
+variable "emr_enable_initial_capacity" {
+  description = "Whether to pre-warm EMR Serverless with initial capacity"
+  type        = bool
+  default     = false
+}
+
+variable "emr_serverless_log_prefix" {
+  description = "S3 prefix for EMR Serverless logs"
+  type        = string
+  default     = "emr-serverless/logs"
+}
+
+variable "emr_log_retention_days" {
+  description = "CloudWatch log retention days for EMR Serverless"
+  type        = number
+  default     = 14
+}
+
+variable "emr_idle_timeout_minutes" {
+  description = "EMR Serverless idle timeout in minutes"
+  type        = number
+  default     = 15
+}
+
+variable "emr_initial_driver_worker_count" {
+  description = "Initial EMR driver worker count"
+  type        = number
+  default     = 1
+}
+
+variable "emr_initial_driver_cpu" {
+  description = "Initial EMR driver CPU"
+  type        = string
+  default     = "2 vCPU"
+}
+
+variable "emr_initial_driver_memory" {
+  description = "Initial EMR driver memory"
+  type        = string
+  default     = "4 GB"
+}
+
+variable "emr_initial_executor_worker_count" {
+  description = "Initial EMR executor worker count"
+  type        = number
+  default     = 20
+}
+
+variable "emr_initial_executor_cpu" {
+  description = "Initial EMR executor CPU"
+  type        = string
+  default     = "2 vCPU"
+}
+
+variable "emr_initial_executor_memory" {
+  description = "Initial EMR executor memory"
+  type        = string
+  default     = "4 GB"
+}
+
+variable "emr_maximum_cpu" {
+  description = "Maximum EMR Serverless aggregate CPU"
+  type        = string
+  default     = "1000 vCPU"
+}
+
+variable "emr_maximum_memory" {
+  description = "Maximum EMR Serverless aggregate memory"
+  type        = string
+  default     = "8000 GB"
+}
+
+variable "emr_maximum_disk" {
+  description = "Maximum EMR Serverless aggregate disk"
+  type        = string
+  default     = "20000 GB"
 }

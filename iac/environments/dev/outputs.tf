@@ -137,3 +137,38 @@ output "msk_connect_connector_arn" {
   description = "Development MSK Connect connector ARN"
   value       = module.data_layer.msk_connect_connector_arn
 }
+
+output "emr_serverless_application_id" {
+  description = "Development EMR Serverless application ID"
+  value       = module.emr_serverless.application_id
+}
+
+output "emr_serverless_application_arn" {
+  description = "Development EMR Serverless application ARN"
+  value       = module.emr_serverless.application_arn
+}
+
+output "emr_serverless_log_group_name" {
+  description = "Development EMR Serverless CloudWatch log group"
+  value       = module.emr_serverless.cloudwatch_log_group_name
+}
+
+output "emr_serverless_logs_s3_uri" {
+  description = "Development EMR Serverless S3 logs URI"
+  value       = module.emr_serverless.s3_log_uri
+}
+
+output "s3_images_bucket_name" {
+  description = "Galaxy images S3 bucket"
+  value       = module.s3.images_bucket_name
+}
+
+output "s3_checkpoints_bucket_name" {
+  description = "Spark checkpoints and EMR artifacts S3 bucket"
+  value       = module.s3.checkpoints_bucket_name
+}
+
+output "s3_models_bucket_name" {
+  description = "ML model artifacts S3 bucket"
+  value       = module.s3.models_bucket_name
+}

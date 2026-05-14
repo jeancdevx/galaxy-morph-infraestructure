@@ -1,0 +1,4 @@
+# Runtime dependencies — provided by the EMR Serverless runtime.
+# Install locally only for development and unit testing.
+boto3>=1.34.0
+pyspark>=3.5.0

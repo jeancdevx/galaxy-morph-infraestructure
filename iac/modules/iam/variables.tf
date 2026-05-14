@@ -55,6 +55,18 @@ variable "msk_cluster_arn" {
   default     = "*"
 }
 
+variable "msk_topic_arn_prefix" {
+  description = "ARN prefix for MSK topics: arn:aws:kafka:region:account:topic/cluster-name/*"
+  type        = string
+  default     = "*"
+}
+
+variable "msk_group_arn_prefix" {
+  description = "ARN prefix for MSK consumer groups: arn:aws:kafka:region:account:group/cluster-name/*"
+  type        = string
+  default     = "*"
+}
+
 variable "ingestion_queue_arn" {
   description = "SQS ingestion queue ARN used by MSK Connect"
   type        = string
