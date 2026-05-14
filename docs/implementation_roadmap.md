@@ -71,6 +71,7 @@ Definir un plan de ejecucion secuencial, con entregables verificables por etapa,
 - Dashboards operativos en dev.
 - Alarmas criticas con canal de notificacion.
 - Documento de runbook inicial para alertas P1/P2.
+- Cierre por etapas permitido: baseline en Q4 y cierre completo de telemetria cuando esten activos recursos de Q6-Q8.
 
 ### Q5 (Semanas 9-10) - Data Layer y Streaming
 **Owner principal:** PE + DE
@@ -92,6 +93,7 @@ Definir un plan de ejecucion secuencial, con entregables verificables por etapa,
 - Job de streaming_classification funcional en EMR Serverless.
 - Librerias compartidas de transformacion y utilidades.
 - Telemetria de throughput/latencia de pipeline Spark.
+- Inferencia en modo stub para dev (sin endpoint SageMaker en esta fase).
 
 **DoD:**
 - Job procesando eventos reales en dev.
