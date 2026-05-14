@@ -1,5 +1,13 @@
 data "aws_caller_identity" "current" {}
 
+module "s3" {
+  source = "../../modules/s3"
+
+  images_bucket_name      = var.images_bucket_name
+  checkpoints_bucket_name = var.checkpoints_bucket_name
+  models_bucket_name      = var.models_bucket_name
+}
+
 module "vpc" {
   source = "../../modules/vpc"
 
@@ -101,9 +109,37 @@ module "iam" {
   models_bucket_name      = var.models_bucket_name
   raw_bucket_name         = var.raw_bucket_name
 
-  appsync_api_arn     = var.appsync_api_arn
-  msk_cluster_arn     = module.data_layer.msk_cluster_arn
-  ingestion_queue_arn = module.data_layer.ingestion_queue_arn
+  appsync_api_arn      = var.appsync_api_arn
+  msk_cluster_arn      = module.data_layer.msk_cluster_arn
+  msk_topic_arn_prefix = module.data_layer.msk_topic_arn_prefix
+  msk_group_arn_prefix = module.data_layer.msk_group_arn_prefix
+  ingestion_queue_arn  = module.data_layer.ingestion_queue_arn
+}
+
+module "emr_serverless" {
+  source = "../../modules/emr_serverless"
+
+  name_prefix           = "${var.project_name}-${var.environment}"
+  private_subnet_ids    = module.vpc.private_subnet_ids
+  emr_security_group_id = module.security_groups.emr_sg_id
+  execution_role_arn    = module.iam.emr_serverless_execution_role_arn
+
+  log_bucket_name = var.checkpoints_bucket_name
+  log_prefix      = var.emr_serverless_log_prefix
+
+  release_label                 = var.emr_release_label
+  enable_initial_capacity       = var.emr_enable_initial_capacity
+  idle_timeout_minutes          = var.emr_idle_timeout_minutes
+  log_retention_days            = var.emr_log_retention_days
+  initial_driver_worker_count   = var.emr_initial_driver_worker_count
+  initial_driver_cpu            = var.emr_initial_driver_cpu
+  initial_driver_memory         = var.emr_initial_driver_memory
+  initial_executor_worker_count = var.emr_initial_executor_worker_count
+  initial_executor_cpu          = var.emr_initial_executor_cpu
+  initial_executor_memory       = var.emr_initial_executor_memory
+  maximum_cpu                   = var.emr_maximum_cpu
+  maximum_memory                = var.emr_maximum_memory
+  maximum_disk                  = var.emr_maximum_disk
 }
 
 module "cognito" {
