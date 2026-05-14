@@ -26,7 +26,7 @@ resource "aws_ecs_task_definition" "kafka_ui" {
       name      = "kafka-ui"
       image     = "provectuslabs/kafka-ui:latest"
       essential = true
-      
+
       portMappings = [
         {
           containerPort = 8080
