@@ -72,3 +72,9 @@ variable "ingestion_queue_arn" {
   type        = string
   default     = "*"
 }
+
+variable "sagemaker_endpoint_arn" {
+  description = "ARN of the SageMaker endpoint the EMR execution role can invoke (use * for dev)"
+  type        = string
+  default     = "*"
+}
