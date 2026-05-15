@@ -142,6 +142,26 @@ module "emr_serverless" {
   maximum_disk                  = var.emr_maximum_disk
 }
 
+module "sagemaker" {
+  source = "../../modules/sagemaker"
+
+  name_prefix            = "${var.project_name}-${var.environment}"
+  execution_role_arn     = module.iam.sagemaker_execution_role_arn
+  model_artifact_s3_uri  = var.sagemaker_model_artifact_s3_uri
+  image_uri              = var.sagemaker_image_uri
+  instance_type          = var.sagemaker_instance_type
+  initial_instance_count = var.sagemaker_initial_instance_count
+
+  enable_vpc_config  = var.sagemaker_enable_vpc_config
+  subnet_ids         = module.vpc.private_subnet_ids
+  security_group_ids = [module.security_groups.sagemaker_endpoint_sg_id]
+
+  enable_autoscaling             = var.sagemaker_enable_autoscaling
+  autoscaling_min_capacity       = var.sagemaker_autoscaling_min_capacity
+  autoscaling_max_capacity       = var.sagemaker_autoscaling_max_capacity
+  autoscaling_target_invocations = var.sagemaker_autoscaling_target_invocations
+}
+
 module "cognito" {
   source = "../../modules/cognito"
 

@@ -5,7 +5,7 @@ from __future__ import annotations
 import json
 import os
 import sys
-from typing import Any
+from typing import Any, Iterator
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
@@ -104,36 +104,64 @@ def classify_record(payload: dict[str, Any], region: str) -> dict[str, Any]:
     }
 
 
+def _make_partition_processor(region: str, success_acc: Any, failed_acc: Any):
+    """
+    Returns a closure that processes one Spark partition on the executor.
+
+    Why a factory instead of a nested def?
+    Spark serializes the closure to ship it to executors. A factory function
+    makes the captured variables (region, accumulators) explicit and avoids
+    Python late-binding issues with loop-captured variables.
+
+    Each executor:
+      1. Creates its own boto3 clients (not serializable — must be local).
+      2. Downloads images from S3.
+      3. Calls SageMaker (or stub) per record.
+      4. Increments accumulators for telemetry.
+      5. Yields result JSON strings — no data returns to the driver.
+    """
+    def process_partition(partition: Iterator) -> Iterator[str]:
+        for row in partition:
+            raw = row.value
+            try:
+                payload = parse_record(raw)
+                result = classify_record(payload, region)
+                success_acc.add(1)
+                yield json.dumps(result)
+            except Exception as err:  # noqa: BLE001
+                failed_acc.add(1)
+                try:
+                    p: dict[str, Any] = json.loads(raw) if isinstance(raw, str) else {}
+                except Exception:
+                    p = {}
+                fallback = {
+                    "jobId": p.get("jobId", "unknown"),
+                    "clientId": p.get("clientId", "unknown"),
+                    "imageKey": p.get("imageKey", "unknown"),
+                    "status": "ERROR",
+                    "error": str(err),
+                }
+                yield json.dumps(fallback)
+
+    return process_partition
+
+
 def process_batch(batch_df: "DataFrame", batch_id: int, region: str) -> None:
     if batch_df.rdd.isEmpty():
         return
 
     started = now_seconds()
-    records = [row.value for row in batch_df.select("value").collect()]
-
-    success = 0
-    failed = 0
-    output_rows: list[str] = []
-
-    for raw in records:
-        try:
-            payload = parse_record(raw)
-            result = classify_record(payload, region)
-            output_rows.append(json.dumps(result))
-            success += 1
-        except Exception as err:  # noqa: BLE001
-            failed += 1
-            fallback = {
-                "jobId": payload.get("jobId", "unknown") if "payload" in locals() else "unknown",
-                "clientId": payload.get("clientId", "unknown") if "payload" in locals() else "unknown",
-                "imageKey": payload.get("imageKey", "unknown") if "payload" in locals() else "unknown",
-                "status": "ERROR",
-                "error": str(err),
-            }
-            output_rows.append(json.dumps(fallback))
-
     spark = batch_df.sparkSession
-    out_df = spark.createDataFrame([(row,) for row in output_rows], ["value"])
+    sc = spark.sparkContext
+
+    success_acc = sc.accumulator(0)
+    failed_acc = sc.accumulator(0)
+
+    results_rdd = batch_df.rdd.mapPartitions(
+        _make_partition_processor(region, success_acc, failed_acc)
+    )
+
+    out_df = spark.createDataFrame(results_rdd.map(lambda v: (v,)), ["value"])
 
     (
         out_df.selectExpr("CAST(value AS STRING) AS value")
@@ -153,12 +181,13 @@ def process_batch(batch_df: "DataFrame", batch_id: int, region: str) -> None:
         .save()
     )
 
+    # Accumulator values are final after the write action above completes.
     elapsed = now_seconds() - started
     metric = BatchTelemetry(
         batch_id=batch_id,
-        records=len(records),
-        success=success,
-        failed=failed,
+        records=success_acc.value + failed_acc.value,
+        success=success_acc.value,
+        failed=failed_acc.value,
         elapsed_seconds=elapsed,
     )
     log_batch_telemetry(metric)

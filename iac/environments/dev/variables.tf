@@ -378,3 +378,57 @@ variable "emr_maximum_disk" {
   type        = string
   default     = "20000 GB"
 }
+
+# SageMaker
+variable "sagemaker_model_artifact_s3_uri" {
+  description = "S3 URI of the packaged model.tar.gz (produced by make upload in services/ml/model_bundle)"
+  type        = string
+}
+
+variable "sagemaker_image_uri" {
+  description = "ECR URI of the PyTorch inference DLC container"
+  type        = string
+  default     = "763104351884.dkr.ecr.us-east-2.amazonaws.com/pytorch-inference:2.3.0-cpu-py311-ubuntu20.04-sagemaker"
+}
+
+variable "sagemaker_instance_type" {
+  description = "SageMaker endpoint instance type"
+  type        = string
+  default     = "ml.m5.large"
+}
+
+variable "sagemaker_initial_instance_count" {
+  description = "Initial number of instances behind the SageMaker endpoint"
+  type        = number
+  default     = 1
+}
+
+variable "sagemaker_enable_vpc_config" {
+  description = "Deploy the SageMaker model inside the VPC (public endpoint when false)"
+  type        = bool
+  default     = false
+}
+
+variable "sagemaker_enable_autoscaling" {
+  description = "Enable Application Auto Scaling on the SageMaker endpoint"
+  type        = bool
+  default     = false
+}
+
+variable "sagemaker_autoscaling_min_capacity" {
+  description = "Minimum instance count for SageMaker autoscaling"
+  type        = number
+  default     = 1
+}
+
+variable "sagemaker_autoscaling_max_capacity" {
+  description = "Maximum instance count for SageMaker autoscaling"
+  type        = number
+  default     = 2
+}
+
+variable "sagemaker_autoscaling_target_invocations" {
+  description = "Target invocations per instance per minute for SageMaker autoscaling"
+  type        = number
+  default     = 10
+}

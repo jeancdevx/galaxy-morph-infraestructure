@@ -102,6 +102,16 @@ data "aws_iam_policy_document" "emr_serverless" {
 
     resources = ["*"]
   }
+
+  statement {
+    sid = "SageMakerInvoke"
+
+    actions = [
+      "sagemaker:InvokeEndpoint",
+    ]
+
+    resources = [var.sagemaker_endpoint_arn]
+  }
 }
 
 resource "aws_iam_policy" "emr_serverless" {

@@ -71,3 +71,14 @@ raw_bucket_name         = "galaxy-morph-raw"
 
 # Replace with concrete ARN once AppSync API exists.
 appsync_api_arn = "*"
+
+# SageMaker — update sagemaker_model_artifact_s3_uri after running: make upload (services/ml/model_bundle)
+sagemaker_model_artifact_s3_uri          = "s3://galaxy-morph-models/sagemaker/galaxy-classifier/efficientnet_b3/v1/model.tar.gz"
+sagemaker_image_uri                      = "763104351884.dkr.ecr.us-east-2.amazonaws.com/pytorch-inference:2.3.0-cpu-py311-ubuntu20.04-sagemaker"
+sagemaker_instance_type                  = "ml.m5.large"
+sagemaker_initial_instance_count         = 1
+sagemaker_enable_vpc_config              = false
+sagemaker_enable_autoscaling             = false
+sagemaker_autoscaling_min_capacity       = 1
+sagemaker_autoscaling_max_capacity       = 2
+sagemaker_autoscaling_target_invocations = 10
