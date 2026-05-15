@@ -57,6 +57,10 @@ terraform.rc
 # Keep this tracked if you want provider version pinning per platform.
 # .terraform.lock.hcl
 
+# ML model artifacts — store in S3, never in git
+*.pth
+services/ml/model_bundle/model.tar.gz
+
 # Serverless / Lambda build artifacts
 .aws-sam/
 .serverless/
