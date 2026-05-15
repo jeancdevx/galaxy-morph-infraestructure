@@ -172,3 +172,13 @@ output "s3_models_bucket_name" {
   description = "ML model artifacts S3 bucket"
   value       = module.s3.models_bucket_name
 }
+
+output "sagemaker_endpoint_name" {
+  description = "SageMaker galaxy classifier endpoint name (use as SAGEMAKER_ENDPOINT_NAME in submit script)"
+  value       = module.sagemaker.endpoint_name
+}
+
+output "sagemaker_endpoint_arn" {
+  description = "SageMaker galaxy classifier endpoint ARN"
+  value       = module.sagemaker.endpoint_arn
+}
