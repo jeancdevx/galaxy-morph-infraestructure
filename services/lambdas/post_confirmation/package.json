@@ -1,0 +1,20 @@
+{
+  "name": "post-confirmation",
+  "version": "1.0.0",
+  "description": "Cognito Post Confirmation trigger — assigns confirmed users to public-user group",
+  "main": "dist/index.js",
+  "scripts": {
+    "build": "esbuild src/index.ts --bundle --minify --platform=node --target=node22 --outfile=dist/index.js && cd dist && zip -r function.zip index.js"
+  },
+  "dependencies": {
+    "@aws-lambda-powertools/logger": "2.33.0",
+    "@aws-lambda-powertools/metrics": "2.33.0",
+    "@aws-sdk/client-cognito-identity-provider": "3.1051.0"
+  },
+  "devDependencies": {
+    "@types/aws-lambda": "8.10.161",
+    "@types/node": "25.9.1",
+    "esbuild": "0.28.0",
+    "typescript": "6.0.3"
+  }
+}
