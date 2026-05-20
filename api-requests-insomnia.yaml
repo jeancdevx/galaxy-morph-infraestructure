@@ -1,0 +1,114 @@
+type: collection.insomnia.rest/5.0
+schema_version: "5.1"
+name: galaxy-morph-api-aws
+meta:
+  id: wrk_ed979a4cc86944c585f436e097825cbb
+  created: 1779305781667
+  modified: 1779305781667
+  description: ""
+collection:
+  - url: "{{ _.base_url }}/auth/signup"
+    name: "1. Auth: Registro de usuario"
+    meta:
+      id: req_gm_aws_001
+      created: 1779305781700
+      modified: 1779305781700
+      isPrivate: false
+      description: "Registra un nuevo usuario en Cognito. El email llega como username."
+      sortKey: 0
+    method: POST
+    body:
+      mimeType: application/json
+      text: |-
+        {
+          "email": "user@example.com",
+          "password": "Password123!"
+        }
+    headers:
+      - name: Content-Type
+        value: application/json
+    settings:
+      renderRequestBody: true
+      encodeUrl: true
+      followRedirects: global
+      cookies:
+        send: true
+        store: true
+      rebuildPath: true
+
+  - url: "{{ _.base_url }}/auth/signin"
+    name: "2. Auth: Inicio de sesión"
+    meta:
+      id: req_gm_aws_002
+      created: 1779305781701
+      modified: 1779305781701
+      isPrivate: false
+      description: "Devuelve accessToken, idToken y refreshToken. Copia el idToken en la variable id_token del environment."
+      sortKey: 100
+    method: POST
+    body:
+      mimeType: application/json
+      text: |-
+        {
+          "email": "user@example.com",
+          "password": "Password123!"
+        }
+    headers:
+      - name: Content-Type
+        value: application/json
+    settings:
+      renderRequestBody: true
+      encodeUrl: true
+      followRedirects: global
+      cookies:
+        send: true
+        store: true
+      rebuildPath: true
+
+  - url: "{{ _.base_url }}/classifications/history"
+    name: "3. Clasificaciones: Historial global de la comunidad"
+    meta:
+      id: req_gm_aws_003
+      created: 1779305781702
+      modified: 1779305781702
+      isPrivate: false
+      description: "Feed global paginado (máx 50). Pasa nextToken como query param para ir a la siguiente página."
+      sortKey: 200
+    method: GET
+    parameters:
+      - name: limit
+        value: "50"
+        disabled: false
+      - name: nextToken
+        value: ""
+        disabled: true
+    headers:
+      - name: Authorization
+        value: "Bearer {{ _.id_token }}"
+      - name: Content-Type
+        value: application/json
+    settings:
+      renderRequestBody: true
+      encodeUrl: true
+      followRedirects: global
+      cookies:
+        send: true
+        store: true
+      rebuildPath: true
+
+cookieJar:
+  name: Default Jar
+  meta:
+    id: jar_1cc596fdec289924621f8280d8d147a01f632576
+    created: 1779305781671
+    modified: 1779305781671
+environments:
+  name: Base Environment
+  meta:
+    id: env_1cc596fdec289924621f8280d8d147a01f632576
+    created: 1779305781670
+    modified: 1779305781670
+    isPrivate: false
+  data:
+    base_url: https://qkwqk2w3o2.execute-api.us-east-2.amazonaws.com/v1
+    id_token: ""
