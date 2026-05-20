@@ -46,6 +46,38 @@ resource "aws_dynamodb_table" "jobs" {
     }
   }
 
+  dynamic "attribute" {
+    for_each = var.enable_gsi_entity_type_created_at ? [1] : []
+    content {
+      name = "entityType"
+      type = "S"
+    }
+  }
+
+  dynamic "attribute" {
+    for_each = var.enable_gsi_entity_type_created_at ? [1] : []
+    content {
+      name = "createdAt"
+      type = "S"
+    }
+  }
+
+  dynamic "global_secondary_index" {
+    for_each = var.enable_gsi_entity_type_created_at ? [1] : []
+    content {
+      name = "entityType-createdAt-index"
+      key_schema {
+        attribute_name = "entityType"
+        key_type       = "HASH"
+      }
+      key_schema {
+        attribute_name = "createdAt"
+        key_type       = "RANGE"
+      }
+      projection_type = "ALL"
+    }
+  }
+
   ttl {
     attribute_name = "ttl"
     enabled        = var.enable_ttl
