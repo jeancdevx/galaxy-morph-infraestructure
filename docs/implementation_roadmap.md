@@ -4,7 +4,7 @@
 Definir un plan de ejecucion secuencial, con entregables verificables por etapa, responsables por rol y Definition of Done (DoD) para avanzar de forma ordenada hasta una plataforma lista para produccion.
 
 ## Supuestos de Planificacion
-- Horizonte inicial: 12 quincenas (24 semanas).
+- Horizonte inicial: 15 quincenas (30 semanas).
 - Entornos objetivo: dev y prod.
 - Region inicial: us-east-2.
 - En esta version se mantiene fuera de alcance el pipeline de telescopios.
@@ -113,81 +113,130 @@ Definir un plan de ejecucion secuencial, con entregables verificables por etapa,
 - Versionado de modelo y proceso de rollback documentado.
 - Cost baseline de inferencia reportado.
 
-### Q8 (Semanas 15-16) - Lambdas API, Dispatcher y Auth
+### Q8 (Semanas 15-16) - Auth Layer y API Publica
 **Owner principal:** BE
 
 **Entregables:**
-- Lambdas de API y results_dispatcher en TypeScript.
-- Integracion con AppSync/API Gateway segun flujo definido.
-- Uso de Powertools (Logger, Tracer, Metrics) en Lambdas.
-- Cognito User Pool, App Clients y flujos de autenticacion integrados con API.
+- Lambda auth en TypeScript con Powertools (Logger, Tracer, Metrics).
+- API Gateway publica: POST /auth/signup, POST /auth/signin, GET /classifications/history.
+- Cognito: flujos SRP y USER_PASSWORD_AUTH validados para grupos scientist-user y public-user.
+- JWT emitido por Cognito con claim cognito:groups validado end-to-end.
 
 **DoD:**
-- Flujo request -> procesamiento -> respuesta realtime validado.
-- Logs estructurados y trazas visibles por request.
-- Cobertura minima de pruebas unitarias acordada.
-- Flujo signup/signin/refresh con JWT validado de extremo a extremo.
+- Signup, signin y refresh funcionan desde cliente HTTP.
+- Claim cognito:groups distingue scientist-user de public-user en el token.
+- Lambda desplegada con trazas visibles en X-Ray y logs estructurados en CloudWatch.
+- Cobertura minima de pruebas unitarias del handler.
 
-### Q9 (Semanas 17-18) - CI/CD Integral
+### Q9 (Semanas 17-18) - API Privada e Ingesta
+**Owner principal:** BE
+
+**Entregables:**
+- Lambda upload en TypeScript: genera N presigned PUT URLs en S3 para subida directa desde cliente.
+- Lambda classify en TypeScript: crea job en DynamoDB (status QUEUED) y escribe N mensajes a SQS.
+- Cuota por tipo de usuario: public-user <= 10 imagenes/dia via DynamoDB (pk=quota#userId, TTL 24h).
+- API Gateway privada con Cognito Authorizer: POST /upload/url, POST /classifications.
+
+**DoD:**
+- Presigned PUT URLs generadas y usables directamente desde el cliente.
+- Job visible en DynamoDB con status QUEUED tras POST /classifications.
+- Mensajes visibles en SQS galaxy-ingestion inmediatamente despues.
+- HTTP 429 al undecimo intento diario de un public-user.
+- Cobertura minima de pruebas unitarias de ambos handlers.
+
+### Q10 (Semanas 19-20) - Tiempo Real y Results Dispatcher
+**Owner principal:** BE + DE
+
+**Entregables:**
+- AppSync GraphQL API: mutation notifyClassification y subscription onClassification(clientId).
+- Lambda results-dispatcher en TypeScript: MSK Event Source Mapping en topic galaxy.results.
+- Dispatcher llama mutation AppSync via HTTP con SigV4 (IAM auth) por cada mensaje Kafka.
+- Dispatcher actualiza DynamoDB processedCount++ y marca COMPLETED cuando processedCount == imageCount.
+
+**DoD:**
+- Subscription onClassification entrega cada resultado al cliente correcto via WebSocket.
+- DynamoDB refleja processedCount actualizado en tiempo real.
+- Flujo completo end-to-end validado en dev: POST /classifications -> pipeline Spark -> WebSocket.
+- Logs estructurados y trazas X-Ray visibles por cada mensaje procesado.
+
+### Q11 (Semanas 21-22) - Capa de Presentacion
+**Owner principal:** PE
+
+**Entregables:**
+- S3 bucket para SPA frontend con bloqueo de acceso publico y OAI.
+- CloudFront distribution con dos origenes: S3 SPA y S3 imagenes de galaxias (OAI privado).
+- WAF asociado a CloudFront con reglas base: rate limiting y AWS Managed Rules (OWASP Top 10).
+- Route53 hosted zone con record apuntando a CloudFront y certificado ACM validado.
+
+**DoD:**
+- SPA accesible via dominio CloudFront con HTTPS forzado.
+- Imagenes de galaxias servidas via CloudFront (S3 directo bloqueado).
+- WAF rechaza requests con patrones de inyeccion en prueba manual.
+- Certificado SSL/TLS activo y sin advertencias de browser.
+
+### Q12 (Semanas 23-24) - CI/CD Integral
 **Owner principal:** PE + BE + DE + MLE
 
 **Entregables:**
-- Pipelines separados para IaC y servicios.
-- Promotion flow dev -> prod con aprobaciones.
-- Estrategia de artefactos versionados (Lambda, Spark, model).
+- Pipelines separados para IaC, Lambdas, job EMR y modelo ML.
+- Promotion flow dev -> prod con aprobaciones manuales por etapa.
+- Estrategia de artefactos versionados: Lambda zip, deps.zip EMR, model.tar.gz SageMaker.
 
 **DoD:**
-- Despliegue a dev completamente automatizado.
-- Gates de calidad activos (lint/test/scan/plan).
-- Evidencia de trazabilidad de release por commit/tag.
+- Despliegue a dev completamente automatizado desde commit.
+- Gates de calidad activos: lint, tests, checkov/tfsec, terraform plan.
+- Trazabilidad de release: cada deploy referencia commit y tag de origen.
 
-### Q10 (Semanas 19-20) - Seguridad y Costos
+### Q13 (Semanas 25-26) - Seguridad y Costos
 **Owner principal:** SRE
 
 **Entregables:**
-- Hardening de IAM, red, cifrado y secretos.
-- Alarmas de presupuesto/costo por dominio.
-- Reglas de retencion de logs y gobernanza de datos.
+- Hardening de IAM (least privilege auditado), cifrado en reposo y en transito, rotacion de secretos.
+- Alarmas de presupuesto/costo por dominio (Lambda, SageMaker, MSK, EMR).
+- Reglas de retencion de logs y politicas de gobernanza de datos.
 
 **DoD:**
 - Informe de seguridad sin hallazgos criticos abiertos.
-- Alertas de costo validadas.
-- Cumplimiento de baseline de hardening aprobado.
+- Alertas de costo configuradas y validadas con un evento de prueba.
+- Cumplimiento de baseline de hardening documentado y aprobado por TL.
 
-### Q11 (Semanas 21-22) - Pruebas No Funcionales
+### Q14 (Semanas 27-28) - Pruebas No Funcionales
 **Owner principal:** QA + SRE
 
 **Entregables:**
-- Pruebas E2E por flujos criticos.
-- Pruebas de carga y resiliencia.
-- Ajustes de autoscaling y capacidad.
+- Pruebas E2E por flujos criticos: upload -> clasificacion -> resultado WebSocket.
+- Pruebas de carga sostenida y burst en API Gateways, SQS, EMR y SageMaker.
+- Ajustes de autoscaling y capacidad basados en resultados de carga.
 
 **DoD:**
-- SLOs cumplidos bajo carga objetivo.
-- Escenarios de falla y recuperacion documentados.
-- Sin bloqueadores P1/P2 abiertos.
+- SLOs definidos en Q4 cumplidos bajo carga objetivo.
+- Escenarios de falla documentados: endpoint SageMaker down, MSK saturado, Lambda throttled.
+- Sin bloqueadores P1/P2 abiertos al cierre de la quincena.
 
-### Q12 (Semanas 23-24) - Go-Live Readiness
+### Q15 (Semanas 29-30) - Go-Live Readiness
 **Owner principal:** TL + SRE
 
 **Entregables:**
-- Runbooks operativos y playbooks de incidentes.
-- Definicion de KPIs/SLO finales.
-- Plan de salida controlada y seguimiento post-release.
+- Runbooks operativos y playbooks de incidentes para todos los componentes criticos.
+- Definicion final de KPIs y SLOs de produccion.
+- Plan de salida controlada con rollback documentado por componente.
 
 **DoD:**
-- Checklist de go-live 100% completado.
-- On-call y ownership de soporte definidos.
-- Aprobacion formal de salida por TL/SRE.
+- Checklist de go-live 100% completado y firmado por TL y SRE.
+- On-call y ownership de soporte definidos con rotacion documentada.
+- Aprobacion formal de salida a produccion por TL/SRE.
 
 ## Dependencias Criticas
 - Q2 depende de Q1 aprobado.
 - Q3 y Q4 dependen de Q2.
 - Q5 depende de Q3 y Q4.
 - Q6 y Q7 dependen de Q5.
-- Q8 depende de Q4, Q6 y Q7.
-- Q9 depende de Q8.
-- Q10-Q12 dependen de Q9.
+- Q8 depende de Q4 (Cognito y IAM base listos). Puede iniciar en paralelo con Q6/Q7.
+- Q9 depende de Q8 y Q5 (SQS y DynamoDB listos).
+- Q10 depende de Q9, Q6 y Q7 (pipeline Spark y SageMaker endpoint activos).
+- Q11 depende de Q10 (todo el backend en pie antes de exponer la capa publica).
+- Q12 depende de Q11.
+- Q13-Q15 dependen de Q12.
 
 ## Riesgos Principales y Mitigacion
 - Riesgo: scope creep temprano.
@@ -210,5 +259,6 @@ Definir un plan de ejecucion secuencial, con entregables verificables por etapa,
 - Costo por 1,000 clasificaciones procesadas.
 
 ## Backlog Fuera de Fase Actual
-- Edge frontend de produccion con CloudFront + Route53.
-- Perimetro avanzado con WAF y tuning de reglas por trafico real.
+- Pipeline de telescopios: ingesta de archivos FITS -> Lambda pre-procesamiento -> SQS -> MSK.
+- Tuning avanzado de WAF con reglas personalizadas basadas en trafico real de produccion.
+- Frontend SPA (React/Next.js): implementacion del cliente web (fuera de scope de infraestructura).
