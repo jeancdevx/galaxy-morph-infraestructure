@@ -98,6 +98,26 @@ output "ingestion_queue_name" {
   value       = module.data_layer.ingestion_queue_name
 }
 
+output "lambda_api_role_arn" {
+  description = "Development Lambda API role ARN"
+  value       = module.iam.lambda_api_role_arn
+}
+
+output "public_api_endpoint" {
+  description = "Development public API Gateway endpoint URL"
+  value       = module.api_gateway.public_api_endpoint
+}
+
+output "auth_api_function_name" {
+  description = "Development auth API Lambda function name"
+  value       = module.api_gateway.auth_api_function_name
+}
+
+output "classification_api_function_name" {
+  description = "Development classification API Lambda function name"
+  value       = module.api_gateway.classification_api_function_name
+}
+
 output "ingestion_queue_arn" {
   description = "Development SQS ingestion queue ARN"
   value       = module.data_layer.ingestion_queue_arn

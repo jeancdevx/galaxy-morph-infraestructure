@@ -32,3 +32,13 @@ output "kafka_ui_execution_role_arn" {
   description = "ARN of the IAM role used by Kafka UI ECS Execution"
   value       = aws_iam_role.kafka_ui_execution.arn
 }
+
+output "lambda_api_role_arn" {
+  description = "Lambda API role ARN (auth + classification public endpoints)"
+  value       = aws_iam_role.lambda_api.arn
+}
+
+output "post_confirmation_role_arn" {
+  description = "IAM role ARN for the Cognito Post Confirmation Lambda trigger"
+  value       = aws_iam_role.post_confirmation.arn
+}

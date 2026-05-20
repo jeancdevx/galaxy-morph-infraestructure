@@ -58,12 +58,13 @@ module "data_layer" {
   msk_security_group_id = module.security_groups.msk_sg_id
 
   # DynamoDB
-  jobs_table_name               = var.jobs_table_name
-  jobs_table_hash_key           = var.jobs_table_hash_key
-  jobs_table_range_key          = var.jobs_table_range_key
-  enable_point_in_time_recovery = var.enable_jobs_table_pitr
-  enable_ttl                    = var.enable_jobs_table_ttl
-  enable_gsi_client_status      = var.enable_jobs_table_gsi
+  jobs_table_name                   = var.jobs_table_name
+  jobs_table_hash_key               = var.jobs_table_hash_key
+  jobs_table_range_key              = var.jobs_table_range_key
+  enable_point_in_time_recovery     = var.enable_jobs_table_pitr
+  enable_ttl                        = var.enable_jobs_table_ttl
+  enable_gsi_client_status          = var.enable_jobs_table_gsi
+  enable_gsi_entity_type_created_at = var.enable_jobs_table_gsi_community
 
   # SQS
   ingestion_queue_name                       = var.ingestion_queue_name
@@ -114,6 +115,8 @@ module "iam" {
   msk_topic_arn_prefix = module.data_layer.msk_topic_arn_prefix
   msk_group_arn_prefix = module.data_layer.msk_group_arn_prefix
   ingestion_queue_arn  = module.data_layer.ingestion_queue_arn
+
+  cognito_user_pool_id = module.cognito.user_pool_id
 }
 
 module "emr_serverless" {
@@ -156,6 +159,7 @@ module "sagemaker" {
   subnet_ids         = module.vpc.private_subnet_ids
   security_group_ids = [module.security_groups.sagemaker_endpoint_sg_id]
 
+  enable_sagemaker_endpoint      = var.sagemaker_enable_endpoint
   enable_autoscaling             = var.sagemaker_enable_autoscaling
   autoscaling_min_capacity       = var.sagemaker_autoscaling_min_capacity
   autoscaling_max_capacity       = var.sagemaker_autoscaling_max_capacity
@@ -165,6 +169,27 @@ module "sagemaker" {
 module "cognito" {
   source = "../../modules/cognito"
 
-  name_prefix       = "${var.project_name}-${var.environment}"
-  app_email_subject = var.project_name
+  name_prefix                = "${var.project_name}-${var.environment}"
+  app_email_subject          = var.project_name
+  aws_region                 = var.aws_region
+  aws_account_id             = data.aws_caller_identity.current.account_id
+  post_confirmation_role_arn = module.iam.post_confirmation_role_arn
+  log_retention_days         = var.api_log_retention_days
+}
+
+module "api_gateway" {
+  source = "../../modules/api_gateway"
+
+  name_prefix           = "${var.project_name}-${var.environment}"
+  aws_region            = var.aws_region
+  cognito_user_pool_id  = module.cognito.user_pool_id
+  cognito_user_pool_arn = module.cognito.user_pool_arn
+  cognito_client_id     = module.cognito.frontend_client_id
+  lambda_api_role_arn   = module.iam.lambda_api_role_arn
+  jobs_table_name       = module.data_layer.jobs_table_name
+  stage_name            = var.api_stage_name
+
+  lambda_timeout     = var.api_lambda_timeout
+  lambda_memory_size = var.api_lambda_memory_size
+  log_retention_days = var.api_log_retention_days
 }

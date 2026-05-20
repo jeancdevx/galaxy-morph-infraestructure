@@ -379,10 +379,16 @@ variable "emr_maximum_disk" {
   default     = "20000 GB"
 }
 
-# SageMaker
+variable "sagemaker_enable_endpoint" {
+  description = "Create the SageMaker model and endpoint. Set false on first apply; set true after model.tar.gz is uploaded to S3."
+  type        = bool
+  default     = false
+}
+
 variable "sagemaker_model_artifact_s3_uri" {
-  description = "S3 URI of the packaged model.tar.gz (produced by make upload in services/ml/model_bundle)"
+  description = "S3 URI of the packaged model.tar.gz (produced by make upload in services/ml/model_bundle). Required when sagemaker_enable_endpoint = true."
   type        = string
+  default     = ""
 }
 
 variable "sagemaker_image_uri" {
@@ -431,4 +437,34 @@ variable "sagemaker_autoscaling_target_invocations" {
   description = "Target invocations per instance per minute for SageMaker autoscaling"
   type        = number
   default     = 10
+}
+
+variable "api_lambda_timeout" {
+  description = "Lambda timeout for public API functions in seconds"
+  type        = number
+  default     = 29
+}
+
+variable "api_lambda_memory_size" {
+  description = "Lambda memory for public API functions in MB"
+  type        = number
+  default     = 256
+}
+
+variable "api_log_retention_days" {
+  description = "CloudWatch log retention for API Gateway and Lambda resources in days"
+  type        = number
+  default     = 14
+}
+
+variable "api_stage_name" {
+  description = "Deployment stage name for the public REST API"
+  type        = string
+  default     = "v1"
+}
+
+variable "enable_jobs_table_gsi_community" {
+  description = "Whether to create the entityType-createdAt-index GSI for the global community feed"
+  type        = bool
+  default     = true
 }

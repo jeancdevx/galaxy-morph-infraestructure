@@ -78,3 +78,9 @@ variable "sagemaker_endpoint_arn" {
   type        = string
   default     = "*"
 }
+
+variable "cognito_user_pool_id" {
+  description = "Cognito User Pool ID used to scope lambda_api Cognito permissions"
+  type        = string
+  default     = ""
+}

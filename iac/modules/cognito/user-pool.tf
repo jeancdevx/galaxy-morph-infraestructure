@@ -33,6 +33,10 @@ resource "aws_cognito_user_pool" "pool" {
     email_message = "Your verification code is {####}"
   }
 
+  lambda_config {
+    post_confirmation = aws_lambda_function.post_confirmation.arn
+  }
+
 }
 
 

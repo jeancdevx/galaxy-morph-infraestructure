@@ -24,6 +24,7 @@ coverage/
 .npm/
 .pnpm-store/
 *.tsbuildinfo
+pnpm-lock.yaml
 
 # Python
 __pycache__/

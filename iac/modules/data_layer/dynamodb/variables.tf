@@ -34,3 +34,9 @@ variable "enable_gsi_client_status" {
   type        = bool
   default     = true
 }
+
+variable "enable_gsi_entity_type_created_at" {
+  description = "Enable GSI entityType-createdAt-index for the global community classification feed"
+  type        = bool
+  default     = true
+}

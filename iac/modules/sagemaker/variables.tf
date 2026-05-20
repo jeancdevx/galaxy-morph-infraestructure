@@ -1,3 +1,9 @@
+variable "enable_sagemaker_endpoint" {
+  description = "Whether to create the SageMaker model, endpoint configuration and endpoint. Set false on first apply, true after model.tar.gz is uploaded to S3."
+  type        = bool
+  default     = false
+}
+
 variable "name_prefix" {
   description = "Name prefix for all SageMaker resources"
   type        = string

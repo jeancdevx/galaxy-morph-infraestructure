@@ -1,0 +1,21 @@
+{
+  "name": "auth-api",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "build": "esbuild src/index.ts --bundle --minify --platform=node --target=node22 --outfile=dist/index.js && cd dist && zip -r function.zip index.js",
+    "clean": "rm -rf dist"
+  },
+  "dependencies": {
+    "@aws-lambda-powertools/logger": "2.33.0",
+    "@aws-lambda-powertools/metrics": "2.33.0",
+    "@aws-lambda-powertools/tracer": "2.33.0",
+    "@aws-sdk/client-cognito-identity-provider": "3.1050.0"
+  },
+  "devDependencies": {
+    "@types/aws-lambda": "8.10.161",
+    "@types/node": "25.9.1",
+    "esbuild": "0.28.0",
+    "typescript": "6.0.3"
+  }
+}
