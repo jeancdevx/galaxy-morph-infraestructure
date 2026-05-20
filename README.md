@@ -47,3 +47,88 @@ Ejecutar la Q2 del roadmap: bootstrap de estado remoto Terraform, bloqueo de est
 
 docker pull bridgecrew/checkov:3
 docker run --rm -v ./iac:/tf --workdir /tf bridgecrew/checkov:3 --directory /tf -o junitxml --output-file-path results.xml
+
+## pasos para ejecutar
+fase 1:
+en tfvars:
+enable_msk_connect_connector = false
+sagemaker_enable_endpoint    = false
+
+cd iac/environments/dev
+terraform apply -auto-approve
+
+fase 2:
+# 1. Descargar Kafka y la librería IAM auth de AWS
+wget -q https://archive.apache.org/dist/kafka/3.5.1/kafka_2.13-3.5.1.tgz && \
+tar -xzf kafka_2.13-3.5.1.tgz && \
+wget -q https://github.com/aws/aws-msk-iam-auth/releases/download/v2.3.0/aws-msk-iam-auth-2.3.0-all.jar \
+  -P kafka_2.13-3.5.1/libs/
+
+# 2. Configurar autenticación IAM
+cat > client.properties << 'EOF'
+security.protocol=SASL_SSL
+sasl.mechanism=AWS_MSK_IAM
+sasl.jaas.config=software.amazon.msk.auth.iam.IAMLoginModule required;
+sasl.client.callback.handler.class=software.amazon.msk.auth.iam.IAMClientCallbackHandler
+EOF
+
+# 3. Definir el broker
+export BS="boot-5mw8mtoy.c2.kafka-serverless.us-east-2.amazonaws.com:9098"
+
+# 4. Crear los topics
+kafka_2.13-3.5.1/bin/kafka-topics.sh \
+  --create --if-not-exists \
+  --bootstrap-server $BS \
+  --command-config client.properties \
+  --replication-factor 2 \
+  --partitions 24 \
+  --topic galaxy.ingestion
+
+kafka_2.13-3.5.1/bin/kafka-topics.sh \
+  --create --if-not-exists \
+  --bootstrap-server $BS \
+  --command-config client.properties \
+  --replication-factor 2 \
+  --partitions 24 \
+  --topic galaxy.results
+
+# 5. Verificar que ambos topics existen
+kafka_2.13-3.5.1/bin/kafka-topics.sh \
+  --list \
+  --bootstrap-server $BS \
+  --command-config client.properties
+
+fase 3:
+en tfvars:
+enable_msk_connect_connector = true   # ← cambiar
+sagemaker_enable_endpoint    = false  # ← sigue en false
+
+terraform apply -auto-approve
+
+fase 4:
+# 4a. Modelo SageMaker (necesita best.pth en el directorio)
+cd services/ml/model_bundle
+make upload
+
+# 4b. Job EMR (pipeline.py + deps)
+cd services/emr/jobs/streaming_classification
+make upload
+
+fase 5:
+en tfvars:
+enable_msk_connect_connector = true   # ya estaba
+sagemaker_enable_endpoint    = true   # ← cambiar
+
+cd iac/environments/dev
+terraform apply
+
+# Esperar ~5 min a que el endpoint pase a InService
+aws sagemaker describe-endpoint \
+  --endpoint-name galaxy-morph-dev-galaxy-classifier \
+  --query 'EndpointStatus' --output text \
+  --profile default --region us-east-2
+
+fase 6:
+INFERENCE_MODE=sagemaker \
+  SAGEMAKER_ENDPOINT_NAME="galaxy-morph-dev-galaxy-classifier" \
+  ./services/emr/jobs/streaming_classification/scripts/submit_dev_job.sh
