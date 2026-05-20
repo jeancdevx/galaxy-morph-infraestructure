@@ -1,4 +1,6 @@
 resource "aws_cloudwatch_metric_alarm" "invocations_5xx" {
+  count = var.enable_sagemaker_endpoint ? 1 : 0
+
   alarm_name          = "${var.name_prefix}-sagemaker-5xx"
   comparison_operator = "GreaterThanThreshold"
   evaluation_periods  = 2
@@ -10,12 +12,14 @@ resource "aws_cloudwatch_metric_alarm" "invocations_5xx" {
   treat_missing_data  = "notBreaching"
 
   dimensions = {
-    EndpointName = aws_sagemaker_endpoint.galaxy_classifier.name
+    EndpointName = aws_sagemaker_endpoint.galaxy_classifier[0].name
     VariantName  = "primary"
   }
 }
 
 resource "aws_cloudwatch_metric_alarm" "model_latency_p99" {
+  count = var.enable_sagemaker_endpoint ? 1 : 0
+
   alarm_name          = "${var.name_prefix}-sagemaker-latency-p99"
   comparison_operator = "GreaterThanThreshold"
   evaluation_periods  = 3
@@ -27,7 +31,7 @@ resource "aws_cloudwatch_metric_alarm" "model_latency_p99" {
   treat_missing_data  = "notBreaching"
 
   dimensions = {
-    EndpointName = aws_sagemaker_endpoint.galaxy_classifier.name
+    EndpointName = aws_sagemaker_endpoint.galaxy_classifier[0].name
     VariantName  = "primary"
   }
 }
