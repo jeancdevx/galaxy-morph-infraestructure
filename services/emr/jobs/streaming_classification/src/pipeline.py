@@ -21,9 +21,9 @@ from retry_utils import retry_with_backoff
 from telemetry import BatchTelemetry, log_batch_telemetry, now_seconds
 
 try:
-    from .config import IMAGES_BUCKET, INFERENCE_MODE, INFERENCE_RETRIES, SAGEMAKER_ENDPOINT_NAME
+    from .config import IMAGES_BUCKET, INFERENCE_RETRIES
 except ImportError:
-    from config import IMAGES_BUCKET, INFERENCE_MODE, INFERENCE_RETRIES, SAGEMAKER_ENDPOINT_NAME
+    from config import IMAGES_BUCKET, INFERENCE_RETRIES
 
 
 def _s3_client(region: str):
@@ -59,8 +59,13 @@ def _stub_classification(payload: dict[str, Any]) -> dict[str, Any]:
     }
 
 
-def classify_record(payload: dict[str, Any], region: str) -> dict[str, Any]:
-    if INFERENCE_MODE == "stub":
+def classify_record(
+    payload: dict[str, Any],
+    region: str,
+    inference_mode: str,
+    sagemaker_endpoint_name: str,
+) -> dict[str, Any]:
+    if inference_mode == "stub":
         inference_result = _stub_classification(payload)
         return {
             "jobId": payload["jobId"],
@@ -71,10 +76,10 @@ def classify_record(payload: dict[str, Any], region: str) -> dict[str, Any]:
             "inferenceMode": "stub",
         }
 
-    if INFERENCE_MODE != "sagemaker":
-        raise ValueError(f"Unsupported INFERENCE_MODE: {INFERENCE_MODE}")
+    if inference_mode != "sagemaker":
+        raise ValueError(f"Unsupported INFERENCE_MODE: {inference_mode}")
 
-    if not SAGEMAKER_ENDPOINT_NAME:
+    if not sagemaker_endpoint_name:
         raise ValueError("SAGEMAKER_ENDPOINT_NAME is required when INFERENCE_MODE=sagemaker")
 
     s3 = _s3_client(region)
@@ -85,7 +90,7 @@ def classify_record(payload: dict[str, Any], region: str) -> dict[str, Any]:
 
     def invoke() -> dict[str, Any]:
         response = sm_runtime.invoke_endpoint(
-            EndpointName=SAGEMAKER_ENDPOINT_NAME,
+            EndpointName=sagemaker_endpoint_name,
             ContentType="application/octet-stream",
             Body=image_bytes,
         )
@@ -94,18 +99,30 @@ def classify_record(payload: dict[str, Any], region: str) -> dict[str, Any]:
 
     inference_result = retry_with_backoff(invoke, attempts=INFERENCE_RETRIES)
 
+    # Normalize SageMaker response: rename "label" → "predictedClass"
+    classification = {
+        "predictedClass": inference_result["label"],
+        "confidence": inference_result["confidence"],
+        "probabilities": inference_result["probabilities"],
+    }
+
     return {
         "jobId": payload["jobId"],
         "clientId": payload["clientId"],
         "imageKey": payload["imageKey"],
         "status": "SUCCESS",
-        "classification": inference_result,
-        "inferenceMode": "sagemaker",
+        "classification": classification,
     }
 
 
-def _make_partition_processor(region: str, success_acc: Any, failed_acc: Any):
-    """
+def _make_partition_processor(
+    region: str,
+    success_acc: Any,
+    failed_acc: Any,
+    inference_mode: str,
+    sagemaker_endpoint_name: str,
+):
+    """"
     Returns a closure that processes one Spark partition on the executor.
 
     Why a factory instead of a nested def?
@@ -125,7 +142,7 @@ def _make_partition_processor(region: str, success_acc: Any, failed_acc: Any):
             raw = row.value
             try:
                 payload = parse_record(raw)
-                result = classify_record(payload, region)
+                result = classify_record(payload, region, inference_mode, sagemaker_endpoint_name)
                 success_acc.add(1)
                 yield json.dumps(result)
             except Exception as err:  # noqa: BLE001
@@ -146,7 +163,7 @@ def _make_partition_processor(region: str, success_acc: Any, failed_acc: Any):
     return process_partition
 
 
-def process_batch(batch_df: "DataFrame", batch_id: int, region: str) -> None:
+def process_batch(batch_df: "DataFrame", batch_id: int, region: str, inference_mode: str, sagemaker_endpoint_name: str) -> None:
     if batch_df.rdd.isEmpty():
         return
 
@@ -158,7 +175,7 @@ def process_batch(batch_df: "DataFrame", batch_id: int, region: str) -> None:
     failed_acc = sc.accumulator(0)
 
     results_rdd = batch_df.rdd.mapPartitions(
-        _make_partition_processor(region, success_acc, failed_acc)
+        _make_partition_processor(region, success_acc, failed_acc, inference_mode, sagemaker_endpoint_name)
     )
 
     out_df = spark.createDataFrame(results_rdd.map(lambda v: (v,)), ["value"])

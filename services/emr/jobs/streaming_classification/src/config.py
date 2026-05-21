@@ -11,7 +11,7 @@ KAFKA_RESULTS_TOPIC = os.environ.get("KAFKA_RESULTS_TOPIC", "galaxy.results")
 KAFKA_GROUP_ID = os.environ.get("KAFKA_GROUP_ID", "galaxy-morph-emr-streaming")
 
 IMAGES_BUCKET = os.environ.get("IMAGES_BUCKET", "galaxy-morph-images")
-INFERENCE_MODE = os.environ.get("INFERENCE_MODE", "stub").lower()
+INFERENCE_MODE = os.environ.get("INFERENCE_MODE", "sagemaker").lower()
 SAGEMAKER_ENDPOINT_NAME = os.environ.get("SAGEMAKER_ENDPOINT_NAME", "")
 
 CHECKPOINT_S3_URI = os.environ.get(
