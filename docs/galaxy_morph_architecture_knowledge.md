@@ -66,10 +66,11 @@ API suscrita a galaxy.results → reenvía por WebSocket al cliente
     "confidence": 0.754791,
     "probabilities": {
       "Elliptical": 0.002293,
+      "Lenticular": 0.000347,
       "Spiral": 0.242865,
       "Barred_Spiral": 0.754791,
       "Edge_on": 0.000051,
-      "Irregular_Merger": 0.000001
+      "Irregular": 0.000001
     }
   }
 }

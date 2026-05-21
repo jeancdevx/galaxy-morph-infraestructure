@@ -42,3 +42,8 @@ output "post_confirmation_role_arn" {
   description = "IAM role ARN for the Cognito Post Confirmation Lambda trigger"
   value       = aws_iam_role.post_confirmation.arn
 }
+
+output "lambda_private_api_role_arn" {
+  description = "IAM role ARN for the private API Lambdas (upload + ingestion)"
+  value       = aws_iam_role.lambda_private_api.arn
+}

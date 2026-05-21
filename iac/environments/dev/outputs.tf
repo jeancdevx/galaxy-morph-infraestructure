@@ -202,3 +202,18 @@ output "sagemaker_endpoint_arn" {
   description = "SageMaker galaxy classifier endpoint ARN"
   value       = module.sagemaker.endpoint_arn
 }
+
+output "private_api_endpoint" {
+  description = "Invoke URL for the private REST API (upload + ingestion)"
+  value       = module.api_gateway_private.private_api_endpoint
+}
+
+output "upload_api_function_name" {
+  description = "Lambda function name for the upload (presigned URL) API"
+  value       = module.api_gateway_private.upload_api_function_name
+}
+
+output "ingestion_api_function_name" {
+  description = "Lambda function name for the ingestion (quota + SQS) API"
+  value       = module.api_gateway_private.ingestion_api_function_name
+}
