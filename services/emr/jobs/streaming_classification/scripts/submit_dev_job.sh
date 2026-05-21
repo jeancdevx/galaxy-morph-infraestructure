@@ -15,7 +15,7 @@ DEV_TF_DIR="$ROOT_DIR/iac/environments/dev"
 
 AWS_REGION="${AWS_REGION:-us-east-2}"
 AWS_PROFILE="${AWS_PROFILE:-default}"
-INFERENCE_MODE="${INFERENCE_MODE:-stub}"
+INFERENCE_MODE="${INFERENCE_MODE:-sagemaker}"
 SAGEMAKER_ENDPOINT_NAME="${SAGEMAKER_ENDPOINT_NAME:-}"
 IMAGES_BUCKET="${IMAGES_BUCKET:-galaxy-morph-images}"
 CHECKPOINT_S3_URI="${CHECKPOINT_S3_URI:-s3://galaxy-morph-checkpoints/streaming-classification/}"
@@ -24,15 +24,20 @@ INFERENCE_RETRIES="${INFERENCE_RETRIES:-3}"
 CHECKPOINTS_BUCKET="${CHECKPOINTS_BUCKET:-galaxy-morph-checkpoints}"
 ARTIFACT_S3_PREFIX="${ARTIFACT_S3_PREFIX:-emr/jobs/streaming_classification/latest}"
 
-if [[ "$INFERENCE_MODE" == "sagemaker" && -z "$SAGEMAKER_ENDPOINT_NAME" ]]; then
-  echo "ERROR: SAGEMAKER_ENDPOINT_NAME is required when INFERENCE_MODE=sagemaker" >&2
-  exit 1
-fi
-
 # Read infrastructure values from Terraform state
 APP_ID="$(cd "$DEV_TF_DIR" && terraform output -raw emr_serverless_application_id)"
 ROLE_ARN="$(cd "$DEV_TF_DIR" && terraform output -raw emr_serverless_execution_role_arn)"
 BROKERS="$(cd "$DEV_TF_DIR" && terraform output -raw data_layer_msk_bootstrap_brokers_sasl_iam)"
+
+# Auto-resolve SAGEMAKER_ENDPOINT_NAME from Terraform when not provided
+if [[ "$INFERENCE_MODE" == "sagemaker" && -z "$SAGEMAKER_ENDPOINT_NAME" ]]; then
+  SAGEMAKER_ENDPOINT_NAME="$(cd "$DEV_TF_DIR" && terraform output -raw sagemaker_endpoint_name 2>/dev/null || true)"
+  if [[ -z "$SAGEMAKER_ENDPOINT_NAME" ]]; then
+    echo "ERROR: SAGEMAKER_ENDPOINT_NAME not found in Terraform outputs. Deploy SageMaker endpoint first or pass it explicitly." >&2
+    exit 1
+  fi
+  echo "INFO: Using SageMaker endpoint from Terraform: $SAGEMAKER_ENDPOINT_NAME"
+fi
 
 ENTRY_POINT="s3://${CHECKPOINTS_BUCKET}/${ARTIFACT_S3_PREFIX}/main_streaming.py"
 PY_FILES="s3://${CHECKPOINTS_BUCKET}/${ARTIFACT_S3_PREFIX}/deps.zip"
