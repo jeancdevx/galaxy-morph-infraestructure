@@ -193,3 +193,23 @@ module "api_gateway" {
   lambda_memory_size = var.api_lambda_memory_size
   log_retention_days = var.api_log_retention_days
 }
+
+module "api_gateway_private" {
+  source = "../../modules/api_gateway_private"
+
+  name_prefix                 = "${var.project_name}-${var.environment}"
+  aws_region                  = var.aws_region
+  cognito_user_pool_id        = module.cognito.user_pool_id
+  cognito_user_pool_arn       = module.cognito.user_pool_arn
+  lambda_private_api_role_arn = module.iam.lambda_private_api_role_arn
+  images_bucket_name          = var.images_bucket_name
+  jobs_table_name             = module.data_layer.jobs_table_name
+  ingestion_queue_url         = module.data_layer.ingestion_queue_url
+  stage_name                  = var.api_stage_name
+
+  lambda_timeout     = var.api_lambda_timeout
+  lambda_memory_size = var.api_lambda_memory_size
+  log_retention_days = var.api_log_retention_days
+
+  depends_on = [module.api_gateway]
+}
