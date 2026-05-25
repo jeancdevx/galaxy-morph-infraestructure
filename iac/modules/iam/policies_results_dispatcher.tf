@@ -31,7 +31,52 @@ data "aws_iam_policy_document" "results_dispatcher" {
       "appsync:GraphQL",
     ]
 
-    resources = [var.appsync_api_arn]
+    resources = ["${var.appsync_api_arn}/*"]
+  }
+
+  statement {
+    sid = "MSKClusterAccess"
+
+    actions = [
+      "kafka:DescribeCluster",
+      "kafka:DescribeClusterV2",
+      "kafka:GetBootstrapBrokers",
+      "kafka:ListTopics",
+    ]
+
+    resources = [var.msk_cluster_arn]
+  }
+
+  statement {
+    sid = "MSKTopicRead"
+
+    actions = [
+      "kafka-cluster:Connect",
+      "kafka-cluster:DescribeGroup",
+      "kafka-cluster:AlterGroup",
+      "kafka-cluster:DescribeTopic",
+      "kafka-cluster:ReadData",
+      "kafka-cluster:DescribeClusterDynamicConfiguration",
+      "kafka-cluster:DescribeTopicDynamicConfiguration",
+    ]
+
+    resources = [
+      var.msk_cluster_arn,
+      var.msk_topic_arn_prefix,
+      var.msk_group_arn_prefix,
+    ]
+  }
+
+  statement {
+    sid = "EC2VpcForMSKESM"
+
+    actions = [
+      "ec2:DescribeSecurityGroups",
+      "ec2:DescribeSubnets",
+      "ec2:DescribeVpcs",
+    ]
+
+    resources = ["*"]
   }
 }
 
