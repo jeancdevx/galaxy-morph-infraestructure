@@ -45,6 +45,13 @@ PY_FILES="s3://${CHECKPOINTS_BUCKET}/${ARTIFACT_S3_PREFIX}/deps.zip"
 SPARK_PARAMS="--py-files ${PY_FILES}"
 SPARK_PARAMS+=" --packages org.apache.spark:spark-sql-kafka-0-10_2.12:3.5.0,software.amazon.msk:aws-msk-iam-auth:1.1.9"
 
+# Keep at least 2 executors alive between micro-batches so Spark does not
+# release them back to EMR after each batch completes (DRA default idle
+# timeout is 60 s, which causes the add/remove cycling visible in Spark UI).
+SPARK_PARAMS+=" --conf spark.dynamicAllocation.minExecutors=2"
+SPARK_PARAMS+=" --conf spark.dynamicAllocation.executorIdleTimeout=300"
+SPARK_PARAMS+=" --conf spark.dynamicAllocation.shuffleTracking.enabled=true"
+
 # Pass config as spark.app.* Spark conf properties.
 # main_streaming.py reads these via SparkConf and injects them into os.environ
 # before importing config.py — the EMR-native pattern for PySpark jobs.
