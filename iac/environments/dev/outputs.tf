@@ -217,3 +217,23 @@ output "ingestion_api_function_name" {
   description = "Lambda function name for the ingestion (quota + SQS) API"
   value       = module.api_gateway_private.ingestion_api_function_name
 }
+
+output "appsync_graphql_url" {
+  description = "AppSync GraphQL endpoint URL"
+  value       = module.appsync.graphql_url
+}
+
+output "appsync_realtime_url" {
+  description = "AppSync real-time WebSocket endpoint URL"
+  value       = module.appsync.realtime_url
+}
+
+output "appsync_api_id" {
+  description = "AppSync GraphQL API ID"
+  value       = module.appsync.api_id
+}
+
+output "results_dispatcher_function_name" {
+  description = "Results dispatcher Lambda function name"
+  value       = module.results_dispatcher.results_dispatcher_function_name
+}

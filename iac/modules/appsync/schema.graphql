@@ -1,0 +1,50 @@
+schema {
+  query: Query
+  mutation: Mutation
+  subscription: Subscription
+}
+
+type Query {
+  _placeholder: String
+}
+
+type ClassificationResult @aws_iam @aws_cognito_user_pools {
+  jobId: ID!
+  clientId: ID!
+  imageKey: String!
+  status: String!
+  classification: Classification
+  errorMessage: String
+}
+
+type Classification @aws_iam @aws_cognito_user_pools {
+  predictedClass: String!
+  confidence: Float!
+  probabilities: AWSJSON!
+}
+
+input ClassificationResultInput {
+  jobId: ID!
+  clientId: ID!
+  imageKey: String!
+  status: String!
+  classification: ClassificationInput
+  errorMessage: String
+}
+
+input ClassificationInput {
+  predictedClass: String!
+  confidence: Float!
+  probabilities: AWSJSON!
+}
+
+type Mutation {
+  notifyClassification(input: ClassificationResultInput!): ClassificationResult
+    @aws_iam
+}
+
+type Subscription {
+  onClassification(clientId: ID!): ClassificationResult
+    @aws_subscribe(mutations: ["notifyClassification"])
+    @aws_cognito_user_pools
+}

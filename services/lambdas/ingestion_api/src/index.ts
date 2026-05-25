@@ -127,6 +127,14 @@ export const handler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPr
       return jsonResponse(400, { message: 'Each image must have a key' });
     }
 
+    // Authorization: each key must belong to the authenticated user
+    const expectedPrefix = `galaxies/${userId}/`;
+    if (images.some((img) => !img.key.startsWith(expectedPrefix))) {
+      return jsonResponse(403, {
+        message: 'Forbidden: you can only classify images you uploaded',
+      });
+    }
+
     const imageCount = images.length;
 
     // Quota check — only for public-user

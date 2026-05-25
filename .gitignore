@@ -72,3 +72,7 @@ junit.xml
 report.xml
 results.xml
 kafka
+
+# Agent Skills
+.agents/
+skills-lock.json
