@@ -110,7 +110,7 @@ module "iam" {
   models_bucket_name      = var.models_bucket_name
   raw_bucket_name         = var.raw_bucket_name
 
-  appsync_api_arn      = var.appsync_api_arn
+  appsync_api_arn      = module.appsync.api_arn
   msk_cluster_arn      = module.data_layer.msk_cluster_arn
   msk_topic_arn_prefix = module.data_layer.msk_topic_arn_prefix
   msk_group_arn_prefix = module.data_layer.msk_group_arn_prefix
@@ -212,4 +212,31 @@ module "api_gateway_private" {
   log_retention_days = var.api_log_retention_days
 
   depends_on = [module.api_gateway]
+}
+
+module "appsync" {
+  source = "../../modules/appsync"
+
+  name_prefix          = "${var.project_name}-${var.environment}"
+  aws_region           = var.aws_region
+  cognito_user_pool_id = module.cognito.user_pool_id
+  log_retention_days   = var.api_log_retention_days
+}
+
+module "results_dispatcher" {
+  source = "../../modules/results_dispatcher"
+
+  name_prefix                 = "${var.project_name}-${var.environment}"
+  results_dispatcher_role_arn = module.iam.results_dispatcher_role_arn
+  private_subnet_ids          = module.vpc.private_subnet_ids
+  lambda_private_sg_id        = module.security_groups.lambda_private_sg_id
+  jobs_table_name             = module.data_layer.jobs_table_name
+  appsync_graphql_url         = module.appsync.graphql_url
+  msk_cluster_arn             = module.data_layer.msk_cluster_arn
+  results_topic_name          = var.results_topic_name
+  lambda_timeout              = var.dispatcher_lambda_timeout
+  lambda_memory_size          = var.dispatcher_lambda_memory_size
+  log_retention_days          = var.api_log_retention_days
+
+  depends_on = [module.appsync, module.data_layer]
 }

@@ -283,12 +283,6 @@ variable "raw_bucket_name" {
   default     = "galaxy-morph-raw"
 }
 
-variable "appsync_api_arn" {
-  description = "AppSync API ARN used by results dispatcher role"
-  type        = string
-  default     = "*"
-}
-
 variable "msk_cluster_arn" {
   description = "MSK cluster ARN used by streaming components"
   type        = string
@@ -467,4 +461,16 @@ variable "enable_jobs_table_gsi_community" {
   description = "Whether to create the entityType-createdAt-index GSI for the global community feed"
   type        = bool
   default     = true
+}
+
+variable "dispatcher_lambda_timeout" {
+  description = "Lambda timeout for the results-dispatcher function in seconds"
+  type        = number
+  default     = 60
+}
+
+variable "dispatcher_lambda_memory_size" {
+  description = "Lambda memory for the results-dispatcher function in MB"
+  type        = number
+  default     = 256
 }
