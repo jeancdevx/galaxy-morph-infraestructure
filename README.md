@@ -132,3 +132,34 @@ fase 6:
 INFERENCE_MODE=sagemaker \
   SAGEMAKER_ENDPOINT_NAME="galaxy-morph-dev-galaxy-classifier" \
   ./services/emr/jobs/streaming_classification/scripts/submit_dev_job.sh
+
+
+## AppSync WebSocket
+
+Generar el header para la URL del WebSocket (reemplazar `<ID_TOKEN>` con el token de Cognito):
+
+```bash
+node -e "
+const token = '<ID_TOKEN>';
+const host = 'fumt26qrmfahvnnnla44rcctd4.appsync-api.us-east-2.amazonaws.com';
+console.log(encodeURIComponent(Buffer.from(JSON.stringify({Authorization: token, host})).toString('base64')));
+"
+```
+
+Mensaje `start` para registrar la suscripcion (reemplazar `<ID_TOKEN>` y `<CLIENT_ID>`):
+
+```json
+{
+  "id": "sub1",
+  "type": "start",
+  "payload": {
+    "data": "{\"query\":\"subscription OnClassification($clientId: ID!) { onClassification(clientId: $clientId) { jobId clientId imageKey status classification { predictedClass confidence probabilities } errorMessage } }\",\"variables\":{\"clientId\":\"<CLIENT_ID>\"}}",
+    "extensions": {
+      "authorization": {
+        "Authorization": "<ID_TOKEN>",
+        "host": "fumt26qrmfahvnnnla44rcctd4.appsync-api.us-east-2.amazonaws.com"
+      }
+    }
+  }
+}
+```

@@ -12,7 +12,7 @@ collection:
     meta:
       id: req_c3a0a7dca21c478dbcb72828cb432b7c
       created: 1779305781700
-      modified: 1779319480758
+      modified: 1779676045599
       isPrivate: false
       description: Registra un nuevo usuario en Cognito. El email llega como username.
       sortKey: 0
@@ -21,7 +21,7 @@ collection:
       mimeType: application/json
       text: |-
         {
-          "email": "jeancdev23@gmail.com",
+          "email": "deveddu17x@gmail.com",
           "password": "Password123!"
         }
     headers:
@@ -40,7 +40,7 @@ collection:
     meta:
       id: req_b5ff2c1558164709833338ee17e4a008
       created: 1779305781701
-      modified: 1779319490073
+      modified: 1779676088864
       isPrivate: false
       description: Devuelve accessToken, idToken y refreshToken. Copia el idToken en
         la variable id_token del environment.
@@ -50,7 +50,7 @@ collection:
       mimeType: application/json
       text: |-
         {
-          "email": "jeancdev23@gmail.com",
+          "email": "deveddu17x@gmail.com",
           "password": "Password123!"
         }
     headers:
@@ -100,7 +100,7 @@ collection:
     meta:
       id: req_0163378c334c4da6b19b6301408a4ede
       created: 1779305781703
-      modified: 1779316247571
+      modified: 1779676115167
       isPrivate: false
       description: Genera N presigned PUT URLs válidos por 1 hora. El cliente usa cada
         uploadUrl para hacer PUT directamente a S3 con la imagen en binario.
@@ -111,8 +111,7 @@ collection:
       text: |-
         {
           "images": [
-            { "filename": "galaxy1.jpg", "contentType": "image/jpeg" },
-            { "filename": "galaxy2.png", "contentType": "image/png" }
+            { "filename": "galaxy1.jpg", "contentType": "image/jpg" }
           ]
         }
     headers:
@@ -133,7 +132,7 @@ collection:
     meta:
       id: req_b90016ef9837474583814cde2c827012
       created: 1779305781704
-      modified: 1779316372961
+      modified: 1779676131669
       isPrivate: false
       description: "Valida cuota diaria (público: 10 imgs/día), crea job en DynamoDB y
         encola mensajes en SQS. Devuelve 202 con jobId. Devuelve 429 si se
@@ -145,8 +144,7 @@ collection:
       text: >-
         {
           "images": [
-            { "key": "galaxies/216b85c0-f081-70d0-0343-2f036d92beaf/fafcb41d-35c0-4217-88d0-dea0ce4696f9/galaxy1.jpg" },
-            { "key": "galaxies/216b85c0-f081-70d0-0343-2f036d92beaf/b7df8167-6840-4156-a1f8-845634cf39fc/galaxy2.png" }
+            { "key": "galaxies/91eb1510-2021-7024-69b8-1bad36ebcff2/23794cc8-b3db-461e-a74d-e1180e359320/galaxy1.jpg" }
           ]
         }
     headers:
@@ -162,19 +160,19 @@ collection:
         send: true
         store: true
       rebuildPath: true
-  - url: https://galaxy-morph-images.s3.us-east-2.amazonaws.com/galaxies/216b85c0-f081-70d0-0343-2f036d92beaf/b7df8167-6840-4156-a1f8-845634cf39fc/galaxy2.png?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Content-Sha256=UNSIGNED-PAYLOAD&X-Amz-Credential=ASIA2XQXZVKA3A3DGCFP%2F20260520%2Fus-east-2%2Fs3%2Faws4_request&X-Amz-Date=20260520T222703Z&X-Amz-Expires=3600&X-Amz-Security-Token=IQoJb3JpZ2luX2VjEC4aCXVzLWVhc3QtMiJHMEUCIQCq0tg1y%2Bjbb9I6mnErj0d%2FIR0yDL%2FQr%2BrkKyt7JP%2BdWgIgFtStxbguPR%2BGTAHSFbQYaIYmaZG29s1sBkvy14f9S%2BQqkwQI%2BP%2F%2F%2F%2F%2F%2F%2F%2F%2F%2FARAAGgw3Mzc3MTA1NDk2MzMiDP6Uh52tCqw%2BD3%2ByESrnAxHiIgzUMIQfnXv74kSHZ3v105RdS0VpyXfWgTAUPbubBv0dwP0gH49KS%2FlTzV8dAiObOCg%2FFSQfIv9G4nXg%2B%2FYs0tK50C7vpueI4jlx6EVwvwuHV3Nk%2FXf3DWpOcw4%2B9szAYOo7n8DhwNidX%2BrI4lVBScYsh9AWoqE0571Aeod8pa5oWZkgMgwuhHjWMJ4Y3tm0%2Bo5Dc1EcgZfFkcz489bPIw4YJIW%2FYnSopflk9ea2VZoUzpQGmih3V%2FBhlFWHVYmVZ7pN8xc1YnH5NlN0tLq%2FGU8YYhjAOAGvnY2wdkVwUM8GjWFW%2F%2FkKIEjGyTdQLSo9E58WNHHWpbns5j6J7iC68K1T3Vx%2BYvXJiZ%2BrhZh4ofLBAFdyrUTt%2BfR5fxDBQvzXOFUACc2hLXjo8AZUiJtMgvwJZ5YEqyIuvB5oi6s9OiLrE7KngoXZmkmJlo0AvnS0tfXEYhh74qS%2ByYDR1%2Fzaa97%2F%2BXK%2FrWXbzfG3D4W9pDiECR%2BBjhHdiPy8CoZNLjUSZix9bvQsWTIcK69sX715cmgxDvK%2Br3IJKXasf9%2B4mPKWYt5deNkP%2FpC%2BmxgnIbfF5sbzGiFyDjJA1Lxhu0rpIcPIhkKCgwTNau9Abparqr5wKM%2B8JsvK7sh6Bak9y2elWbSQaa4wtuq40AY6ogF9V9SoNL2%2Bh9NpTLSYVdC93O2nV%2B52j0j4NmoPq8BoPRu8Jinn0U%2Fii0vRMDnfKtlexqB9QcqQG%2Fhvz7Fg6SLt%2BuwrZ8%2BDUh5rKh%2BrrY1wbPRivMIf6kYWI8JkmEHSnjGbSUinjLDuViWfAAQx4oXhQBa2MD%2F%2Fxar2cmK2qrMPjogordNQnn0Yyez76eYoYgyuto7ViClJfAHPUTJ06cdBhlA%3D&X-Amz-Signature=7b20171b6a119d351c9e7ffe4f30f88b0beadcf4a0e565e582e7e482508160f6&X-Amz-SignedHeaders=host&x-amz-checksum-crc32=AAAAAA%3D%3D&x-amz-sdk-checksum-algorithm=CRC32&x-id=PutObject
+  - url: https://galaxy-morph-images.s3.us-east-2.amazonaws.com/galaxies/91eb1510-2021-7024-69b8-1bad36ebcff2/23794cc8-b3db-461e-a74d-e1180e359320/galaxy1.jpg?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Content-Sha256=UNSIGNED-PAYLOAD&X-Amz-Credential=ASIA2XQXZVKAQH2SAPPD%2F20260525%2Fus-east-2%2Fs3%2Faws4_request&X-Amz-Date=20260525T022841Z&X-Amz-Expires=3600&X-Amz-Security-Token=IQoJb3JpZ2luX2VjEJL%2F%2F%2F%2F%2F%2F%2F%2F%2F%2FwEaCXVzLWVhc3QtMiJHMEUCIDUcgEcMtkVHiqIHSJS5ybKUS%2FCQ1IgXO3H3b7%2FyUop%2BAiEA3npehp3ERkVcT3LKzboSnhlIzxT%2B1Cyn7XiTwBWICGwqigQIXBAAGgw3Mzc3MTA1NDk2MzMiDPa18%2BCL3wl8q6OLCirnA9%2FpfKCbPTHaGi%2BnAYEgxImOk5eXTTdXUIc%2FzCEachSMRYk4bnJPd6P3nn593NeEdYseyLFIejrSy6Pm7rqaiVth98c%2Fl3JUvh9K2GKVv0PYzQmtfubWe6Q2ZbVDw6ddgldY1jyXMwH1xW5LNojZWji0%2BhdVpNigZju8uusSU4D73ocwdDhSokgHo%2FS5CfZWWjb%2Bj0DiD%2BPfuSGwmNC6O6Xv09z%2FPOBBRVVK%2BQPwldPMTqwD0DPA84drtHz6Z37fkEfFxfiITwnTqdMm6LhVDUz%2BRUDOAPl7W9N3C4FBh3H%2FeYifMZjpUz8LwKEIUxXZVISVZ6a8NZFvaX271TyEOVKxKm51bjDFIVH%2BL0yVNCiIhUbcpzcJWUk72%2B1ZO534zso75i45gD0bBSQLnwVm2WsK6kXgyH9M1t9U4QL5AvzewBMIz0rNPlymIfUiouLZUFgwlDroKVqpckXZuQhpJWqivMqxro9Mz2tID2YSNSDjntpl0aW7ZV3WqaHYctSPw1SQHQxwnWa9xbmBeGWoyQ59Leq8g6Ks%2BNTCkgMlzXvU5L8m7mMYunDMaVIgzWjGG%2Fj37unZgD4%2BAT8beXFyWL3KoaMg06AG174ErpYxlt0FjtLzgZ%2BOe0CVYd7TFzOrwevd%2FjgUbqMw2OfO0AY6ogFXWVHw1y4bofPTz78vZJy6H0DJenSaE2DGZekxAcAMVN9ynlJKqDErcRHN0DXgBjP4kcJAKMWsoSBTSrhMW6xNpAx3FK7V5mcDYpO4okSCoFyv4xQWO3tXec6LZlihpJJ26Za5%2FeQ1AFA8kywr%2BQJdqHFswyVil2yq6EVNGOLZe9dYxrMmFs1SWUtfkGmdlhnbt6SJd%2FE9Ypzi3z6i1mjmHyY%3D&X-Amz-Signature=1f371064517da74982c140f7fa23ea99086467c380ed821207250e1064dafcfc&X-Amz-SignedHeaders=host&x-amz-checksum-crc32=AAAAAA%3D%3D&x-amz-sdk-checksum-algorithm=CRC32&x-id=PutObject
     name: "4.2. Upload: Image to S3 Bucket"
     meta:
       id: req_35d65ac87728476c9c08f9216bd2400e
       created: 1779316210990
-      modified: 1779316309636
+      modified: 1779676144561
       isPrivate: false
       description: ""
       sortKey: 350
     method: PUT
     body:
       mimeType: application/octet-stream
-      fileName: /home/jeancdevx/Downloads/197575.jpg
+      fileName: /home/jeancdevx/Downloads/229358.jpg
     headers:
       - name: Content-Type
         value: image/jpeg
@@ -190,6 +188,44 @@ collection:
         send: true
         store: true
       rebuildPath: true
+  - url: "wss://fumt26qrmfahvnnnla44rcctd4.appsync-realtime-api.us-east-2.amazonaws.com/graphql?header={{ _.appsync_ws_header }}&payload={{ _.appsync_ws_payload }}"
+    name: "6. AppSync: Suscripción en tiempo real (WebSocket)"
+    meta:
+      id: ws-req_bb81c8309e6344fdae7ef41d7382a0ab
+      created: 1779676731731
+      modified: 1779676902643
+      description: |-
+        Protocolo: graphql-ws sobre AppSync Realtime API.
+        ⚠️  appsync_ws_header caduca con el id_token (1 hora). Para regenerarlo:
+          node -e "const t='<id_token>',h='fumt26qrmfahvnnnla44rcctd4.appsync-api.us-east-2.amazonaws.com';console.log(Buffer.from(JSON.stringify({Authorization:t,host:h})).toString('base64'))"
+
+        SECUENCIA DE MENSAJES:
+
+        1. Conectar y enviar:
+           {"type":"connection_init"}
+           → esperar: {"type":"connection_ack"}
+
+        2. Suscribirse (reemplaza {{ _.user_sub }} si lo copias a mano):
+           {"id":"sub1","type":"start","payload":{"data":"{\"query\":\"subscription OnClassification($clientId: ID!) { onClassification(clientId: $clientId) { jobId clientId imageKey status classification { predictedClass confidence probabilities } errorMessage } }\",\"variables\":{\"clientId\":\"{{ _.user_sub }}\"}}","extensions":{"authorization":{"Authorization":"{{ _.id_token }}","host":"{{ _.appsync_graphql_host }}"}}}}
+           → esperar: {"id":"sub1","type":"start_ack"}
+           → datos llegan como: {"id":"sub1","type":"data","payload":{"data":{"onClassification":{...}}}}
+
+        3. Cancelar suscripción:
+           {"id":"sub1","type":"stop"}
+      sortKey: 500
+    settings:
+      encodeUrl: false
+      cookies:
+        store: true
+        send: true
+      followRedirects: global
+    headers:
+      - name: Sec-WebSocket-Protocol
+        value: graphql-ws
+      - name: User-Agent
+        value: insomnia/12.5.0
+        description: ""
+        disabled: false
 cookieJar:
   name: Default Jar
   meta:
@@ -201,9 +237,13 @@ environments:
   meta:
     id: env_1cc596fdec289924621f8280d8d147a01f632576
     created: 1779305781670
-    modified: 1779319526116
+    modified: 1779676104168
     isPrivate: false
   data:
-    base_url: https://ivtxm17oif.execute-api.us-east-2.amazonaws.com/v1
-    id_token: eyJraWQiOiI4OFlmUHdKVGF3MFVSQVhmXC9sbXo1UHNOd1VldFJ1XC96QjdybWp3WmxYMVE9IiwiYWxnIjoiUlMyNTYifQ.eyJzdWIiOiI3MTliODU1MC03MGMxLTcwMjAtMWMzZS05N2NkYjg5ODIwNmMiLCJjb2duaXRvOmdyb3VwcyI6WyJwdWJsaWMtdXNlciJdLCJlbWFpbF92ZXJpZmllZCI6dHJ1ZSwiaXNzIjoiaHR0cHM6XC9cL2NvZ25pdG8taWRwLnVzLWVhc3QtMi5hbWF6b25hd3MuY29tXC91cy1lYXN0LTJfR1hvc3ZTcTFMIiwiY29nbml0bzp1c2VybmFtZSI6IjcxOWI4NTUwLTcwYzEtNzAyMC0xYzNlLTk3Y2RiODk4MjA2YyIsIm9yaWdpbl9qdGkiOiJhZGQ4MGNjOC1lZjM2LTQwYWItODhkZC02NzlmNTBjOGZhNDgiLCJhdWQiOiIxYWJlcWNzaTFlbW45dm03MjdrcDh1ODR0ZCIsImV2ZW50X2lkIjoiMmY2MzAzMjAtMDY3Zi00NmRlLTkxZjgtZjUyZDE4ZTdlNTc4IiwidG9rZW5fdXNlIjoiaWQiLCJhdXRoX3RpbWUiOjE3NzkzMTk1MTQsImV4cCI6MTc3OTMyMzExNCwiaWF0IjoxNzc5MzE5NTE0LCJqdGkiOiJlYjhiMDZlZC1jMDY2LTQ2MzUtOGQ0Ny0zNTgxMzQwMzA4MGUiLCJlbWFpbCI6ImplYW5jZGV2MjNAZ21haWwuY29tIn0.RRUiQX9AM3JctR-gxJbsNEcXCYy2jKHXmeyPahn-5JXoINpHhw7aUIcXHBjK6_jyQcYW0hb6yNiSZuryvSLXrjlN40w76UVUbjPMj3FYN5an2Xmk-NSyR1d2GIE2fnqVAD9P1WQrSMNynZwkawUG3Z5kpOMKbQgkUYSfIpIwpkshK4AzEOBltTO4OnzVg1U-13EDMAkk-YUfTNb--Kd7Fia4M1TdZ4YxV0o6ALxlJ7ekI0QK-c9LBHyikqZoFKkW6BbYGFcHhC52cdBoKZAqsxFwEG6ukJB3dPDJknSLqNVWwTD8-nq_jS4ZyhNAP4fOIL6ehaRGSuADnywCKIH8VA
-    private_base_url: https://vnk0bncaob.execute-api.us-east-2.amazonaws.com/v1
+    base_url: https://nfzfqwcxkf.execute-api.us-east-2.amazonaws.com/v1
+    id_token: eyJraWQiOiJBRGx1U2lST1MzTTFKN3drcVZCeG4rVDlGcGswcGRVNG9jRG1NRkZkdlU4PSIsImFsZyI6IlJTMjU2In0.eyJzdWIiOiI5MWViMTUxMC0yMDIxLTcwMjQtNjliOC0xYmFkMzZlYmNmZjIiLCJjb2duaXRvOmdyb3VwcyI6WyJwdWJsaWMtdXNlciJdLCJlbWFpbF92ZXJpZmllZCI6dHJ1ZSwiaXNzIjoiaHR0cHM6Ly9jb2duaXRvLWlkcC51cy1lYXN0LTIuYW1hem9uYXdzLmNvbS91cy1lYXN0LTJfN2lsZXZkREE5IiwiY29nbml0bzp1c2VybmFtZSI6IjkxZWIxNTEwLTIwMjEtNzAyNC02OWI4LTFiYWQzNmViY2ZmMiIsIm9yaWdpbl9qdGkiOiI5NjI0YjE5MS0yNWM0LTQwMDgtOTUwYy03ZmZhNDA2ZjY5ZjAiLCJhdWQiOiIzOGZvYTc2Mjk4bWxwcThvcWpxa2VyMjJ0ZiIsImV2ZW50X2lkIjoiN2M4ODA2YmUtMDBhNy00ZDIzLWE0NjYtMjk1Y2JlZjI3ZjQ3IiwidG9rZW5fdXNlIjoiaWQiLCJhdXRoX3RpbWUiOjE3Nzk2NzczOTcsImV4cCI6MTc3OTY4MDk5NywiaWF0IjoxNzc5Njc3Mzk3LCJqdGkiOiIwMmQxZjkxNi0zYzc4LTQ5MjMtYWIxOS0xYzZlMWMwMWIxNzkiLCJlbWFpbCI6ImRldmVkZHUxN3hAZ21haWwuY29tIn0.kxaOYlYduKqEbddqc263ObCLmGZBEqXm71IQTIy2DEDD6OWNopiWiPVIi8AhOtrCydHiZBVnbM0HJIiRCv9PBnLytR1knUcvYfe4U1gScMNOXu9MhGskr8z2uWIfGVse6LVkcoXWewUGKwKy2sdFMXDCQEJTnnwlskukgHSVIKNcGSkEMqMBN2958Hf-9p6-1g7GTaUj2J-VAxv1B_uehLFIj9ObKqvoqY-5Mvj8Jo9h00cffpRMT8zhtIFS14FFREKXaAJD1Sk3D-R81-5TCEuG-yma1owHTVHeAiBgln9cqvwDm6l56AJdOLtLuzVLzmiZ_BNaZbvmI9HUZohxsA
+    private_base_url: https://n208tx141l.execute-api.us-east-2.amazonaws.com/v1
+    user_sub: 91eb1510-2021-7024-69b8-1bad36ebcff2
+    appsync_graphql_host: fumt26qrmfahvnnnla44rcctd4.appsync-api.us-east-2.amazonaws.com
+    appsync_ws_header: eyJBdXRob3JpemF0aW9uIjoiZXlKcmFXUWlPaUpCUkd4MVUybFNUMU16VFRGS04zZHJjVlpDZUc0clZEbEdjR3N3Y0dSVk5HOWpSRzFOUmtaa2RsVTRQU0lzSW1Gc1p5STZJbEpUTWpVMkluMC5leUp6ZFdJaU9pSTVNV1ZpTVRVeE1DMHlNREl4TFRjd01qUXROamxpT0MweFltRmtNelpsWW1ObVpqSWlMQ0pqYjJkdWFYUnZPbWR5YjNWd2N5STZXeUp3ZFdKc2FXTXRkWE5sY2lKZExDSmxiV0ZwYkY5MlpYSnBabWxsWkNJNmRISjFaU3dpYVhOeklqb2lhSFIwY0hNNkx5OWpiMmR1YVhSdkxXbGtjQzUxY3kxbFlYTjBMVEl1WVcxaGVtOXVZWGR6TG1OdmJTOTFjeTFsWVhOMExUSmZOMmxzWlhaa1JFRTVJaXdpWTI5bmJtbDBienAxYzJWeWJtRnRaU0k2SWpreFpXSXhOVEV3TFRJd01qRXROekF5TkMwMk9XSTRMVEZpWVdRek5tVmlZMlptTWlJc0ltOXlhV2RwYmw5cWRHa2lPaUk1TmpJMFlqRTVNUzB5TldNMExUUXdNRGd0T1RVd1l5MDNabVpoTkRBMlpqWTVaakFpTENKaGRXUWlPaUl6T0dadllUYzJNams0Yld4d2NUaHZjV3B4YTJWeU1qSjBaaUlzSW1WMlpXNTBYMmxrSWpvaU4yTTRPREEyWW1VdE1EQmhOeTAwWkRJekxXRTBOall0TWprMVkySmxaakkzWmpRM0lpd2lkRzlyWlc1ZmRYTmxJam9pYVdRaUxDSmhkWFJvWDNScGJXVWlPakUzTnprMk56Y3pPVGNzSW1WNGNDSTZNVGMzT1RZNE1EazVOeXdpYVdGMElqb3hOemM1TmpjM016azNMQ0pxZEdraU9pSXdNbVF4WmpreE5pMHpZemM0TFRRNU1qTXRZV0l4T1MweFl6WmxNV013TVdJeE56a2lMQ0psYldGcGJDSTZJbVJsZG1Wa1pIVXhOM2hBWjIxaGFXd3VZMjl0SW4wLmt4YU9ZbFlkdUtxRWJkZHFjMjYzT2JDTG1HWkJFcVhtNzFJUVRJeTJERURENk9XTm9waVdpUFZJaThBaE90ckN5ZEhpWkJWbmJNMEhKSWlSQ3Y5UEJuTHl0UjFrblVjdllmZTRVMWdTY01OT1h1OU1oR3Nrcjh6MnVXSWZHVnNlNkxWa2NvWFdld1VHS3dLeTJzZEZNWERDUUVKVG5ud2xza3VrZ0hTVklLTmNHU2tFTXFNQk4yOTU4SGYtOXA2LTFnN0dUYVVqMkotVkF4djFCX3VlaExGSWo5T2JLcXZvcVktNU12ajhKbzloMDBjZmZwUk1UOHpodElGUzE0RkZSRUtYYUFKRDFTazNELVI4MS01VENFdUcteW1hMW93SFRWSGVBaUJnbG45Y3F2d0RtNmw1NkFKZE9MdEx1elZMem1pWl9CTmFaYnZtSTlIVVpvaHhzQSIsImhvc3QiOiJmdW10MjZxcm1mYWh2bm5ubGE0NHJjY3RkNC5hcHBzeW5jLWFwaS51cy1lYXN0LTIuYW1hem9uYXdzLmNvbSJ9
+    appsync_ws_payload: e30%3D
