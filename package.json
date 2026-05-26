@@ -1,0 +1,24 @@
+{
+  "name": "galaxy-morph-infraestructure",
+  "version": "0.0.1",
+  "private": true,
+  "scripts": {
+    "lint": "eslint 'services/lambdas/*/src/**/*.ts'",
+    "lint:fix": "eslint 'services/lambdas/*/src/**/*.ts' --fix",
+    "format": "prettier --write 'services/lambdas/*/src/**/*.ts'",
+    "format:check": "prettier --check 'services/lambdas/*/src/**/*.ts'",
+    "test": "pnpm -r test",
+    "build": "pnpm -r build"
+  },
+  "devDependencies": {
+    "@eslint/js": "10.0.1",
+    "@ianvs/prettier-plugin-sort-imports": "4.7.1",
+    "@vitest/coverage-v8": "3.2.2",
+    "eslint": "10.4.0",
+    "globals": "17.6.0",
+    "prettier": "3.8.3",
+    "typescript": "6.0.3",
+    "typescript-eslint": "8.60.0",
+    "vitest": "3.2.2"
+  }
+}

@@ -4,7 +4,7 @@
 Definir un plan de ejecucion secuencial, con entregables verificables por etapa, responsables por rol y Definition of Done (DoD) para avanzar de forma ordenada hasta una plataforma lista para produccion.
 
 ## Supuestos de Planificacion
-- Horizonte inicial: 15 quincenas (30 semanas).
+- Horizonte inicial: 16 quincenas (32 semanas).
 - Entornos objetivo: dev y prod.
 - Region inicial: us-east-2.
 - En esta version se mantiene fuera de alcance el pipeline de telescopios.
@@ -159,7 +159,47 @@ Definir un plan de ejecucion secuencial, con entregables verificables por etapa,
 - Flujo completo end-to-end validado en dev: POST /classifications -> pipeline Spark -> WebSocket.
 - Logs estructurados y trazas X-Ray visibles por cada mensaje procesado.
 
-### Q11 (Semanas 21-22) - Capa de Presentacion
+### Q11 (Semanas 21-22) - Calidad Tecnica y Hardening de Codigo
+**Owner principal:** BE + PE + SRE
+
+**Entregables:**
+
+**Lambdas:**
+- pnpm workspace raiz con shared package para jsonResponse, tipos comunes y config Powertools base.
+- Cada Lambda refactorizada a estructura src/handler.ts + src/services/* + src/lib/* eliminando el god-file index.ts.
+- ESLint + Prettier configurados a nivel workspace (config compartida, scripts por Lambda y a nivel raiz).
+- Vitest configurado en cada Lambda con cobertura minima 70% en logica de negocio.
+- Tests unitarios cubriendo: logica de cuota (ingestion_api), firma SigV4 (results_dispatcher), routing y manejo de errores (auth_api, upload_api, classification_api).
+
+**IAM:**
+- Eliminar todos los resources = ["*"] reparables: CloudWatch Logs a log group ARN pattern, SQS a queue ARN especifico, SageMaker InvokeEndpoint a endpoint ARN, Cognito AdminAddUserToGroup a user pool ARN, ECR (excepto ecr:GetAuthorizationToken que genuinamente requiere "*").
+- Dividir la politica lambda_runtime en politicas especificas por Lambda: upload_api solo s3:PutObject, ingestion_api sin s3:DeleteObject ni dynamodb:Scan, results_dispatcher sin dynamodb:Scan.
+- Eliminar s3:DeleteObject, dynamodb:Scan y sqs:ReceiveMessage de politicas donde el servicio no los necesita.
+- Variables IAM sin default = "*": hacer los ARNs requeridos o agregar validacion explicita.
+- Anotar con #checkov:skip los resources = ["*"] genuinamente necesarios (ec2:Describe*, ecr:GetAuthorizationToken, logs:* en algunos contextos) con justificacion inline.
+
+**Terraform:**
+- Extraer kafka_ui de data_layer a modulo observability_tools independiente.
+- Dividir security_groups/security_groups.tf en archivos por servicio (lambda.tf, emr.tf, msk.tf, ecs.tf).
+- Descomponer modulo iam: mover politicas de cada servicio a su modulo correspondiente o crear sub-modulos por dominio.
+- Dividir api_public.tf y api_private.tf en archivos por responsabilidad (cloudwatch.tf, routes_auth.tf, routes_classifications.tf, deployment.tf).
+- Pinear imagen kafka-ui a version especifica (eliminar :latest).
+
+**Checkov:**
+- Resolver los fallos remediables: S3 versioning, DynamoDB CMK, SQS CMK, Lambda reserved concurrency, API Gateway access logging.
+- Documentar y aplicar #checkov:skip con justificacion para los checks que no aplican al contexto del proyecto.
+- Meta: 0 failures sin skip, todos los skips con comentario de razon.
+- Integrar checkov en el pipeline de validacion de Terraform junto a fmt/validate/plan.
+
+**DoD:**
+- checkov scan: 0 failures; todos los skips documentados con justificacion.
+- Todas las Lambdas con tests pasando y cobertura >= 70% en logica de negocio.
+- ESLint + Prettier sin errores ni warnings en todos los Lambdas.
+- IAM audit: ningun resources = ["*"] sin justificacion documentada.
+- terraform fmt/validate sin errores en todos los modulos.
+- PR de refactor revisada y aprobada por TL.
+
+### Q12 (Semanas 23-24) - Capa de Presentacion
 **Owner principal:** PE
 
 **Entregables:**
@@ -174,7 +214,7 @@ Definir un plan de ejecucion secuencial, con entregables verificables por etapa,
 - WAF rechaza requests con patrones de inyeccion en prueba manual.
 - Certificado SSL/TLS activo y sin advertencias de browser.
 
-### Q12 (Semanas 23-24) - CI/CD Integral
+### Q13 (Semanas 25-26) - CI/CD Integral
 **Owner principal:** PE + BE + DE + MLE
 
 **Entregables:**
@@ -187,7 +227,7 @@ Definir un plan de ejecucion secuencial, con entregables verificables por etapa,
 - Gates de calidad activos: lint, tests, checkov/tfsec, terraform plan.
 - Trazabilidad de release: cada deploy referencia commit y tag de origen.
 
-### Q13 (Semanas 25-26) - Seguridad y Costos
+### Q14 (Semanas 27-28) - Seguridad y Costos
 **Owner principal:** SRE
 
 **Entregables:**
@@ -200,7 +240,7 @@ Definir un plan de ejecucion secuencial, con entregables verificables por etapa,
 - Alertas de costo configuradas y validadas con un evento de prueba.
 - Cumplimiento de baseline de hardening documentado y aprobado por TL.
 
-### Q14 (Semanas 27-28) - Pruebas No Funcionales
+### Q15 (Semanas 29-30) - Pruebas No Funcionales
 **Owner principal:** QA + SRE
 
 **Entregables:**
@@ -213,7 +253,7 @@ Definir un plan de ejecucion secuencial, con entregables verificables por etapa,
 - Escenarios de falla documentados: endpoint SageMaker down, MSK saturado, Lambda throttled.
 - Sin bloqueadores P1/P2 abiertos al cierre de la quincena.
 
-### Q15 (Semanas 29-30) - Go-Live Readiness
+### Q16 (Semanas 31-32) - Go-Live Readiness
 **Owner principal:** TL + SRE
 
 **Entregables:**
@@ -234,9 +274,10 @@ Definir un plan de ejecucion secuencial, con entregables verificables por etapa,
 - Q8 depende de Q4 (Cognito y IAM base listos). Puede iniciar en paralelo con Q6/Q7.
 - Q9 depende de Q8 y Q5 (SQS y DynamoDB listos).
 - Q10 depende de Q9, Q6 y Q7 (pipeline Spark y SageMaker endpoint activos).
-- Q11 depende de Q10 (todo el backend en pie antes de exponer la capa publica).
+- Q11 depende de Q10 (deuda tecnica resuelta antes de exponer capa publica).
 - Q12 depende de Q11.
-- Q13-Q15 dependen de Q12.
+- Q13 depende de Q12.
+- Q14-Q16 dependen de Q13.
 
 ## Riesgos Principales y Mitigacion
 - Riesgo: scope creep temprano.
