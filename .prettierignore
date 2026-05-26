@@ -1,0 +1,26 @@
+# Dependencies
+node_modules/
+**/node_modules/
+
+# Lambda build outputs (esbuild)
+**/dist/
+build/
+
+# EMR Spark job build
+services/emr/jobs/**/build/
+
+# Lockfiles (auto-generated)
+pnpm-lock.yaml
+
+# Terraform state & provider cache (JSON but machine-managed)
+**/.terraform/
+**/*.tfstate
+**/*.tfstate.backup
+**/.terraform.lock.hcl
+
+# Test results
+iac/results.xml/
+
+# Coverage reports
+coverage/
+
