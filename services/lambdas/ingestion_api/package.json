@@ -4,7 +4,9 @@
   "description": "Quota check, DynamoDB job creation and SQS enqueue for galaxy classification",
   "main": "dist/index.js",
   "scripts": {
-    "build": "esbuild src/index.ts --bundle --minify --platform=node --target=node22 --outfile=dist/index.js && cd dist && zip -r function.zip index.js"
+    "build": "esbuild src/index.ts --bundle --minify --platform=node --target=node22 --outfile=dist/index.js && cd dist && zip -r function.zip index.js",
+    "test": "vitest run",
+    "test:coverage": "vitest run --coverage"
   },
   "dependencies": {
     "@aws-lambda-powertools/logger": "2.33.0",
@@ -12,12 +14,15 @@
     "@aws-lambda-powertools/tracer": "2.33.0",
     "@aws-sdk/client-dynamodb": "3.1051.0",
     "@aws-sdk/client-sqs": "3.1051.0",
-    "@aws-sdk/lib-dynamodb": "3.1051.0"
+    "@aws-sdk/lib-dynamodb": "3.1051.0",
+    "@galaxy-morph/shared": "workspace:*"
   },
   "devDependencies": {
     "@types/aws-lambda": "8.10.161",
     "@types/node": "25.9.1",
+    "@vitest/coverage-v8": "3.2.2",
     "esbuild": "0.28.0",
-    "typescript": "6.0.3"
+    "typescript": "6.0.3",
+    "vitest": "3.2.2"
   }
 }
