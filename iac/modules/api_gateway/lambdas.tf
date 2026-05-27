@@ -10,7 +10,7 @@ resource "aws_cloudwatch_log_group" "auth_api" {
 
 resource "aws_lambda_function" "auth_api" {
   function_name    = "${var.name_prefix}-auth-api"
-  role             = var.lambda_api_role_arn
+  role             = var.auth_api_role_arn
   runtime          = "nodejs22.x"
   handler          = "index.handler"
   filename         = local.auth_api_zip
@@ -45,7 +45,7 @@ resource "aws_cloudwatch_log_group" "classification_api" {
 
 resource "aws_lambda_function" "classification_api" {
   function_name    = "${var.name_prefix}-classification-api"
-  role             = var.lambda_api_role_arn
+  role             = var.classification_api_role_arn
   runtime          = "nodejs22.x"
   handler          = "index.handler"
   filename         = local.classification_api_zip
