@@ -7,21 +7,31 @@ LAMBDA_DIRS := $(addprefix services/lambdas/,$(LAMBDA_DIRS_LIST))
 # Package names (hyphens) → used for pnpm --filter
 LAMBDA_PKGS := auth-api classification-api ingestion-api upload-api post-confirmation results-dispatcher
 
-.PHONY: install build clean test lint format \
+# Python Lambdas (built with pip + zip, not pnpm)
+PYTHON_LAMBDA_DIRS := services/lambdas/kafka_setup
+
+.PHONY: install build build-python build-kafka_setup clean test lint format \
         $(LAMBDA_DIRS_LIST) $(addprefix build-,$(LAMBDA_DIRS_LIST))
 
 ## Install all workspace dependencies (run once from root)
 install:
 	pnpm install
 
-## Build all Lambda packages
-build: $(LAMBDA_DIRS_LIST)
+## Build all Lambda packages (TypeScript + Python)
+build: $(LAMBDA_DIRS_LIST) build-python
 
-## Build a single Lambda by directory name: make build-auth_api
+## Build Python Lambdas
+build-python: build-kafka_setup
+
+## Build kafka_setup Python Lambda
+build-kafka_setup:
+	$(MAKE) -C services/lambdas/kafka_setup build
+
+## Build a single TypeScript Lambda by directory name: make build-auth_api
 $(addprefix build-,$(LAMBDA_DIRS_LIST)): build-%:
 	pnpm --filter=$(subst _,-,$*) run build
 
-## Build each Lambda (called by 'make build')
+## Build each TypeScript Lambda (called by 'make build')
 $(LAMBDA_DIRS_LIST):
 	pnpm --filter=$(subst _,-,$@) run build
 
@@ -51,6 +61,10 @@ clean:
 		rm -rf $$dir/dist; \
 		rm -rf $$dir/node_modules; \
 		rm -rf $$dir/pnpm-lock.yaml; \
+		echo "Cleaned: $$dir/dist"; \
+	done
+	@for dir in $(PYTHON_LAMBDA_DIRS); do \
+		rm -rf $$dir/dist; \
 		echo "Cleaned: $$dir/dist"; \
 	done
 
