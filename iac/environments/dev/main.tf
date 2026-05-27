@@ -261,3 +261,23 @@ module "results_dispatcher" {
 
   depends_on = [module.appsync, module.data_layer]
 }
+
+module "kafka_setup" {
+  source = "../../modules/kafka_setup"
+
+  name_prefix          = "${var.project_name}-${var.environment}"
+  execution_role_arn   = module.iam.kafka_setup_role_arn
+  private_subnet_ids   = module.vpc.private_subnet_ids
+  lambda_private_sg_id = module.security_groups.lambda_private_sg_id
+
+  kafka_bootstrap_servers  = module.data_layer.msk_bootstrap_brokers_sasl_iam
+  ingestion_topic_name     = var.ingestion_topic_name
+  results_topic_name       = var.results_topic_name
+  topic_partitions         = var.kafka_topic_partitions
+  topic_replication_factor = 3 # MSK Serverless always uses 3 AZs
+  ingestion_retention_ms   = var.kafka_ingestion_retention_ms
+  results_retention_ms     = var.kafka_results_retention_ms
+  log_retention_days       = var.api_log_retention_days
+
+  depends_on = [module.data_layer, module.iam]
+}
