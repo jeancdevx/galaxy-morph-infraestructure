@@ -3,11 +3,14 @@ locals {
 }
 
 resource "aws_cloudwatch_log_group" "post_confirmation" {
+  #checkov:skip=CKV_AWS_158:KMS encryption for CW logs not required in dev
   name              = "/aws/lambda/${var.name_prefix}-post-confirmation"
   retention_in_days = var.log_retention_days
 }
 
 resource "aws_lambda_function" "post_confirmation" {
+  #checkov:skip=CKV_AWS_116:DLQ applies to async invocations only; post_confirmation is invoked synchronously by Cognito
+  #checkov:skip=CKV_AWS_173:Environment variables are service config (POWERTOOLS_SERVICE_NAME, LOG_LEVEL), not secrets
   function_name = "${var.name_prefix}-post-confirmation"
   role          = var.post_confirmation_role_arn
   runtime       = "nodejs22.x"
@@ -30,6 +33,7 @@ resource "aws_lambda_function" "post_confirmation" {
 
 # Allow Cognito to invoke this Lambda
 resource "aws_lambda_permission" "cognito_post_confirmation" {
+  #checkov:skip=CKV_AWS_364:source_arn is scoped to the Cognito user pool ARN
   statement_id  = "AllowCognitoInvoke"
   action        = "lambda:InvokeFunction"
   function_name = aws_lambda_function.post_confirmation.function_name
