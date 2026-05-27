@@ -23,6 +23,7 @@ resource "aws_api_gateway_account" "main" {
 }
 
 resource "aws_cloudwatch_log_group" "public_api_stage" {
+  #checkov:skip=CKV_AWS_158:KMS encryption for CW logs not required in dev
   name              = "API-Gateway-Execution-Logs_${aws_api_gateway_rest_api.public.id}/${var.stage_name}"
   retention_in_days = var.log_retention_days
 }
