@@ -28,6 +28,11 @@ output "kafka_ui_execution_role_arn" {
   value       = aws_iam_role.kafka_ui_execution.arn
 }
 
+output "kafka_setup_role_arn" {
+  description = "IAM role ARN for the Kafka setup Lambda"
+  value       = aws_iam_role.kafka_setup.arn
+}
+
 output "auth_api_role_arn" {
   description = "IAM role ARN for the auth-api Lambda (Cognito authentication)"
   value       = aws_iam_role.auth_api.arn

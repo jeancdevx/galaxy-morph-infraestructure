@@ -38,6 +38,11 @@ resource "aws_iam_role" "classification_api" {
   assume_role_policy = data.aws_iam_policy_document.lambda_assume_role.json
 }
 
+resource "aws_iam_role" "kafka_setup" {
+  name               = "${var.name_prefix}-kafka-setup-role"
+  assume_role_policy = data.aws_iam_policy_document.lambda_assume_role.json
+}
+
 resource "aws_iam_role" "post_confirmation" {
   name               = "${var.name_prefix}-post-confirmation-role"
   assume_role_policy = data.aws_iam_policy_document.lambda_assume_role.json
