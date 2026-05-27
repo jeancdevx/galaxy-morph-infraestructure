@@ -3,6 +3,8 @@ locals {
 }
 
 resource "aws_lambda_function" "results_dispatcher" {
+  #checkov:skip=CKV_AWS_116:results_dispatcher is triggered by MSK event source mapping; DLQ not applicable for streaming consumers
+  #checkov:skip=CKV_AWS_173:Environment variables are resource IDs (JOBS_TABLE_NAME, APPSYNC_GRAPHQL_URL), not secrets
   function_name = "${var.name_prefix}-results-dispatcher"
   role          = var.results_dispatcher_role_arn
   runtime       = "nodejs22.x"
