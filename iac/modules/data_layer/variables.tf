@@ -187,18 +187,3 @@ variable "raw_bucket_arn" {
   description = "ARN of the raw bucket to store plugins"
   type        = string
 }
-
-variable "kafka_ui_execution_role_arn" {
-  description = "IAM role ARN for Kafka UI ECS Execution"
-  type        = string
-}
-
-variable "kafka_ui_task_role_arn" {
-  description = "IAM role ARN for Kafka UI ECS Task"
-  type        = string
-}
-
-variable "public_subnet_ids" {
-  description = "Public subnet IDs for Kafka UI Fargate task"
-  type        = list(string)
-}
