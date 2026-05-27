@@ -8,7 +8,7 @@ data "aws_iam_policy_document" "results_dispatcher" {
       "logs:PutLogEvents",
     ]
 
-    resources = ["*"]
+    resources = local.lambda_log_arns
   }
 
   statement {
@@ -76,6 +76,10 @@ data "aws_iam_policy_document" "results_dispatcher" {
       "ec2:DescribeVpcs",
     ]
 
+    # ec2:Describe* actions do not support resource-level IAM permissions
+    # (AWS API limitation — no ARN filtering is available for these APIs).
+    # Scoped to the minimum read-only set required for Lambda VPC and MSK
+    # Event Source Mapping connectivity discovery.
     resources = ["*"]
   }
 }

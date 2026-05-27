@@ -36,20 +36,31 @@ data "aws_iam_policy_document" "sagemaker_execution" {
       "logs:PutLogEvents",
     ]
 
+    resources = local.sagemaker_log_arns
+  }
+
+  statement {
+    sid = "ECRAuthToken"
+
+    actions = [
+      "ecr:GetAuthorizationToken",
+    ]
+
+    # ecr:GetAuthorizationToken issues an account-level auth token and does not
+    # support resource-level IAM permissions (AWS API limitation).
     resources = ["*"]
   }
 
   statement {
-    sid = "ECRRead"
+    sid = "ECRImagePull"
 
     actions = [
-      "ecr:GetAuthorizationToken",
       "ecr:BatchGetImage",
       "ecr:GetDownloadUrlForLayer",
       "ecr:BatchCheckLayerAvailability",
     ]
 
-    resources = ["*"]
+    resources = [var.ecr_repository_arn]
   }
 }
 
