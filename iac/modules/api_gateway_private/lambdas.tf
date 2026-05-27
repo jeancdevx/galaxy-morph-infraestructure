@@ -10,7 +10,7 @@ resource "aws_cloudwatch_log_group" "upload_api" {
 
 resource "aws_lambda_function" "upload_api" {
   function_name = "${var.name_prefix}-upload-api"
-  role          = var.lambda_private_api_role_arn
+  role          = var.upload_api_role_arn
   runtime       = "nodejs22.x"
   handler       = "index.handler"
   timeout       = var.lambda_timeout
@@ -49,7 +49,7 @@ resource "aws_cloudwatch_log_group" "ingestion_api" {
 
 resource "aws_lambda_function" "ingestion_api" {
   function_name = "${var.name_prefix}-ingestion-api"
-  role          = var.lambda_private_api_role_arn
+  role          = var.ingestion_api_role_arn
   runtime       = "nodejs22.x"
   handler       = "index.handler"
   timeout       = var.lambda_timeout

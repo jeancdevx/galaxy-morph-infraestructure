@@ -18,8 +18,13 @@ variable "cognito_user_pool_arn" {
   type        = string
 }
 
-variable "lambda_private_api_role_arn" {
-  description = "IAM role ARN for upload and ingestion Lambda functions"
+variable "upload_api_role_arn" {
+  description = "IAM role ARN for the upload-api Lambda function"
+  type        = string
+}
+
+variable "ingestion_api_role_arn" {
+  description = "IAM role ARN for the ingestion-api Lambda function"
   type        = string
 }
 
