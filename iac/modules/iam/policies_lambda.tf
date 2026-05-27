@@ -1,4 +1,5 @@
-data "aws_iam_policy_document" "lambda_runtime" {
+# upload_api: generates S3 presigned PutObject URLs. No DynamoDB or SQS access needed.
+data "aws_iam_policy_document" "upload_api" {
   statement {
     sid = "CloudWatchLogs"
 
@@ -12,58 +13,80 @@ data "aws_iam_policy_document" "lambda_runtime" {
   }
 
   statement {
-    sid = "S3ImagesReadWrite"
+    sid = "S3PresignedPut"
+
+    actions = ["s3:PutObject"]
+
+    resources = ["arn:aws:s3:::${var.images_bucket_name}/galaxies/*"]
+  }
+}
+
+resource "aws_iam_policy" "upload_api" {
+  name   = "${var.name_prefix}-upload-api-policy"
+  policy = data.aws_iam_policy_document.upload_api.json
+}
+
+resource "aws_iam_role_policy_attachment" "upload_api" {
+  role       = aws_iam_role.upload_api.name
+  policy_arn = aws_iam_policy.upload_api.arn
+}
+
+resource "aws_iam_role_policy_attachment" "upload_api_xray" {
+  role       = aws_iam_role.upload_api.name
+  policy_arn = "arn:aws:iam::aws:policy/AWSXRayDaemonWriteAccess"
+}
+
+# ingestion_api: enforces daily quota (UpdateItem with ConditionExpression),
+# creates job records (PutItem), and enqueues classification tasks (SQS SendMessage).
+# No S3 access needed — images are uploaded directly by the client via presigned URL.
+data "aws_iam_policy_document" "ingestion_api" {
+  statement {
+    sid = "CloudWatchLogs"
 
     actions = [
-      "s3:GetObject",
-      "s3:PutObject",
-      "s3:DeleteObject",
+      "logs:CreateLogGroup",
+      "logs:CreateLogStream",
+      "logs:PutLogEvents",
     ]
 
-    resources = [local.images_bucket_all_arn]
+    resources = local.lambda_log_arns
   }
 
   statement {
-    sid = "DynamoDBJobsReadWrite"
+    sid = "DynamoDBJobsWrite"
 
     actions = [
-      "dynamodb:GetItem",
       "dynamodb:PutItem",
       "dynamodb:UpdateItem",
-      "dynamodb:Query",
-      "dynamodb:Scan",
     ]
 
     resources = [local.jobs_table_arn]
   }
 
   statement {
-    sid = "SQSQueueAccess"
+    sid = "SQSEnqueue"
 
     actions = [
       "sqs:SendMessage",
-      "sqs:ReceiveMessage",
-      "sqs:DeleteMessage",
-      "sqs:GetQueueAttributes",
-      "sqs:GetQueueUrl",
-      "sqs:ChangeMessageVisibility",
+      "sqs:SendMessageBatch",
     ]
 
     resources = [var.ingestion_queue_arn]
   }
 }
 
-resource "aws_iam_policy" "lambda_runtime" {
-  name   = "${var.name_prefix}-lambda-runtime-policy"
-  policy = data.aws_iam_policy_document.lambda_runtime.json
+resource "aws_iam_policy" "ingestion_api" {
+  name   = "${var.name_prefix}-ingestion-api-policy"
+  policy = data.aws_iam_policy_document.ingestion_api.json
 }
 
-resource "aws_iam_role_policy_attachment" "lambda_runtime" {
-  role       = aws_iam_role.lambda_execution.name
-  policy_arn = aws_iam_policy.lambda_runtime.arn
+resource "aws_iam_role_policy_attachment" "ingestion_api" {
+  role       = aws_iam_role.ingestion_api.name
+  policy_arn = aws_iam_policy.ingestion_api.arn
 }
 
-resource "aws_iam_role_policy_attachment" "lambda_managed_vpc" {
-  role       = aws_iam_role.lambda_execution.name
-  policy_arn = "arn:aws:iam::aws:policy/service-role/AWSLambdaVPCAccessExecutionRole"
+resource "aws_iam_role_policy_attachment" "ingestion_api_xray" {
+  role       = aws_iam_role.ingestion_api.name
+  policy_arn = "arn:aws:iam::aws:policy/AWSXRayDaemonWriteAccess"
 }
+
