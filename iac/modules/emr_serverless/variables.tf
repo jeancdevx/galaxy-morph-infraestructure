@@ -6,7 +6,7 @@ variable "name_prefix" {
 variable "release_label" {
   description = "EMR release label for Spark application"
   type        = string
-  default     = "emr-6.15.0"
+  default     = "emr-7.13.0"
 }
 
 variable "application_type" {
@@ -92,7 +92,7 @@ variable "initial_driver_memory" {
 variable "initial_executor_worker_count" {
   description = "Initial executor worker count"
   type        = number
-  default     = 20
+  default     = 3
 }
 
 variable "initial_executor_cpu" {
