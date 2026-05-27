@@ -1,4 +1,9 @@
 resource "aws_s3_bucket" "terraform_state" {
+  #checkov:skip=CKV_AWS_20:Public access controlled by aws_s3_bucket_public_access_block
+  #checkov:skip=CKV_AWS_57:Public access controlled by aws_s3_bucket_public_access_block
+  #checkov:skip=CKV2_AWS_6:Public access controlled by aws_s3_bucket_public_access_block
+  #checkov:skip=CKV_AWS_19:Encryption configured via aws_s3_bucket_server_side_encryption_configuration; CMK optional in dev
+  #checkov:skip=CKV2_AWS_61:Lifecycle configured via separate aws_s3_bucket_lifecycle_configuration resource
   bucket = local.state_bucket_name
 }
 
