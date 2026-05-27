@@ -84,3 +84,9 @@ variable "cognito_user_pool_id" {
   type        = string
   default     = ""
 }
+
+variable "ecr_repository_arn" {
+  description = "ARN of the ECR repository containing the SageMaker container image. Used to scope ECR pull permissions on the SageMaker execution role. Defaults to '*' — scope to a specific repo ARN in production."
+  type        = string
+  default     = "*"
+}
