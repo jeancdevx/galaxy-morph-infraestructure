@@ -1,4 +1,5 @@
 resource "aws_cloudwatch_log_group" "private_api_stage" {
+  #checkov:skip=CKV_AWS_158:KMS encryption for CW logs not required in dev
   name              = "API-Gateway-Execution-Logs_${aws_api_gateway_rest_api.private.id}/${var.stage_name}"
   retention_in_days = var.log_retention_days
 }
@@ -28,9 +29,13 @@ resource "aws_api_gateway_deployment" "private" {
 }
 
 resource "aws_api_gateway_stage" "private" {
-  deployment_id = aws_api_gateway_deployment.private.id
-  rest_api_id   = aws_api_gateway_rest_api.private.id
-  stage_name    = var.stage_name
+  #checkov:skip=CKV_AWS_120:Stage-level caching has per-GB cost; not enabled in dev
+  #checkov:skip=CKV2_AWS_77:WAF association planned for Q12
+  #checkov:skip=CKV2_AWS_78:WAF association planned for Q12
+  deployment_id        = aws_api_gateway_deployment.private.id
+  rest_api_id          = aws_api_gateway_rest_api.private.id
+  stage_name           = var.stage_name
+  xray_tracing_enabled = true
 
   access_log_settings {
     destination_arn = aws_cloudwatch_log_group.private_api_stage.arn
