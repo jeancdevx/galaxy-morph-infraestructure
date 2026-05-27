@@ -8,7 +8,7 @@ data "aws_iam_policy_document" "lambda_runtime" {
       "logs:PutLogEvents",
     ]
 
-    resources = ["*"]
+    resources = local.lambda_log_arns
   }
 
   statement {
@@ -49,7 +49,7 @@ data "aws_iam_policy_document" "lambda_runtime" {
       "sqs:ChangeMessageVisibility",
     ]
 
-    resources = ["*"]
+    resources = [var.ingestion_queue_arn]
   }
 }
 

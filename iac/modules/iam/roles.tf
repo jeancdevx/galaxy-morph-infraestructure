@@ -38,18 +38,23 @@ resource "aws_iam_role_policy_attachment" "post_confirmation_basic" {
   policy_arn = "arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole"
 }
 
-resource "aws_iam_policy" "post_confirmation" {
-  name = "${var.name_prefix}-post-confirmation-policy"
+data "aws_iam_policy_document" "post_confirmation" {
+  statement {
+    sid = "CognitoAddToGroup"
 
-  policy = jsonencode({
-    Version = "2012-10-17"
-    Statement = [{
-      Sid      = "CognitoAddToGroup"
-      Effect   = "Allow"
-      Action   = "cognito-idp:AdminAddUserToGroup"
-      Resource = "*"
-    }]
-  })
+    actions = ["cognito-idp:AdminAddUserToGroup"]
+
+    resources = [
+      var.cognito_user_pool_id != "" ?
+      "arn:aws:cognito-idp:${var.aws_region}:${var.aws_account_id}:userpool/${var.cognito_user_pool_id}" :
+      "*"
+    ]
+  }
+}
+
+resource "aws_iam_policy" "post_confirmation" {
+  name   = "${var.name_prefix}-post-confirmation-policy"
+  policy = data.aws_iam_policy_document.post_confirmation.json
 }
 
 resource "aws_iam_role_policy_attachment" "post_confirmation" {

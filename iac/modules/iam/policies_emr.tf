@@ -45,16 +45,6 @@ data "aws_iam_policy_document" "emr_serverless" {
   }
 
   statement {
-    sid = "InvokeSageMakerEndpoint"
-
-    actions = [
-      "sagemaker:InvokeEndpoint",
-    ]
-
-    resources = ["*"]
-  }
-
-  statement {
     sid = "MSKIAMCluster"
 
     actions = [
@@ -90,16 +80,29 @@ data "aws_iam_policy_document" "emr_serverless" {
   }
 
   statement {
-    sid = "CloudWatchLogs"
+    sid = "CloudWatchLogsWrite"
 
     actions = [
       "logs:CreateLogGroup",
       "logs:CreateLogStream",
       "logs:PutLogEvents",
+    ]
+
+    resources = local.emr_log_arns
+  }
+
+  statement {
+    sid = "CloudWatchLogsDescribe"
+
+    actions = [
       "logs:DescribeLogGroups",
       "logs:DescribeLogStreams",
     ]
 
+    # logs:DescribeLogGroups and logs:DescribeLogStreams are called by EMR
+    # Serverless at the account level to validate the logging destination
+    # before log groups exist. These actions do not support resource-level
+    # IAM scoping in this context (AWS API limitation).
     resources = ["*"]
   }
 

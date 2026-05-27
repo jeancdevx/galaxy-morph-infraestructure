@@ -35,16 +35,6 @@ data "aws_iam_policy_document" "msk_connect_execution" {
   }
 
   statement {
-    sid = "SQSList"
-
-    actions = [
-      "sqs:ListQueues"
-    ]
-
-    resources = ["arn:aws:sqs:${var.aws_region}:${var.aws_account_id}:*"]
-  }
-
-  statement {
     sid = "CloudWatchLogs"
 
     actions = [
@@ -53,7 +43,7 @@ data "aws_iam_policy_document" "msk_connect_execution" {
       "logs:PutLogEvents",
     ]
 
-    resources = ["*"]
+    resources = local.msk_connect_log_arns
   }
 
   statement {

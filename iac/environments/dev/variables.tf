@@ -373,6 +373,12 @@ variable "emr_maximum_disk" {
   default     = "20000 GB"
 }
 
+variable "emr_auto_stop_enabled" {
+  description = "Whether EMR Serverless auto-stops when idle. Set false to keep pre-warmed workers alive 24/7."
+  type        = bool
+  default     = true
+}
+
 variable "sagemaker_enable_endpoint" {
   description = "Create the SageMaker model and endpoint. Set false on first apply; set true after model.tar.gz is uploaded to S3."
   type        = bool
@@ -431,6 +437,18 @@ variable "sagemaker_autoscaling_target_invocations" {
   description = "Target invocations per instance per minute for SageMaker autoscaling"
   type        = number
   default     = 10
+}
+
+variable "sagemaker_endpoint_arn" {
+  description = "ARN of the deployed SageMaker endpoint. Passed to the IAM module to scope EMR invoke permissions. Set this after the initial SageMaker endpoint is created to avoid a circular dependency between the IAM and SageMaker modules. Defaults to '*' until the endpoint ARN is known."
+  type        = string
+  default     = "*"
+}
+
+variable "ecr_repository_arn" {
+  description = "ARN of the ECR repository containing the SageMaker container image. Passed to the IAM module to scope ECR pull permissions on the SageMaker execution role."
+  type        = string
+  default     = "*"
 }
 
 variable "api_lambda_timeout" {

@@ -117,6 +117,13 @@ module "iam" {
   ingestion_queue_arn  = module.data_layer.ingestion_queue_arn
 
   cognito_user_pool_id = module.cognito.user_pool_id
+
+  # sagemaker_endpoint_arn cannot be sourced from module.sagemaker.endpoint_arn
+  # because the SageMaker module depends on module.iam.sagemaker_execution_role_arn,
+  # which would create a circular dependency. Set this variable in terraform.tfvars
+  # after the initial SageMaker endpoint has been provisioned.
+  sagemaker_endpoint_arn = var.sagemaker_endpoint_arn
+  ecr_repository_arn     = var.ecr_repository_arn
 }
 
 module "emr_serverless" {
@@ -133,6 +140,7 @@ module "emr_serverless" {
   release_label                 = var.emr_release_label
   enable_initial_capacity       = var.emr_enable_initial_capacity
   idle_timeout_minutes          = var.emr_idle_timeout_minutes
+  auto_stop_enabled             = var.emr_auto_stop_enabled
   log_retention_days            = var.emr_log_retention_days
   initial_driver_worker_count   = var.emr_initial_driver_worker_count
   initial_driver_cpu            = var.emr_initial_driver_cpu

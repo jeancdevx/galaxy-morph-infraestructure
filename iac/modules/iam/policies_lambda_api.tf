@@ -8,7 +8,7 @@ data "aws_iam_policy_document" "lambda_api" {
       "logs:PutLogEvents",
     ]
 
-    resources = ["*"]
+    resources = local.lambda_log_arns
   }
 
   statement {
