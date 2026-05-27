@@ -49,8 +49,19 @@ SPARK_PARAMS+=" --packages org.apache.spark:spark-sql-kafka-0-10_2.12:3.5.0,soft
 # release them back to EMR after each batch completes (DRA default idle
 # timeout is 60 s, which causes the add/remove cycling visible in Spark UI).
 SPARK_PARAMS+=" --conf spark.dynamicAllocation.minExecutors=2"
+SPARK_PARAMS+=" --conf spark.dynamicAllocation.maxExecutors=24"
 SPARK_PARAMS+=" --conf spark.dynamicAllocation.executorIdleTimeout=300"
 SPARK_PARAMS+=" --conf spark.dynamicAllocation.shuffleTracking.enabled=true"
+
+# Match executor/driver resources to the pre-warmed initial_capacity config
+# (4 vCPU / 8 GB per executor) so EMR reuses pre-warmed workers instead of
+# provisioning new ones on first batch.
+SPARK_PARAMS+=" --conf spark.executor.cores=4"
+SPARK_PARAMS+=" --conf spark.executor.memory=6g"
+SPARK_PARAMS+=" --conf spark.executor.memoryOverhead=2g"
+SPARK_PARAMS+=" --conf spark.driver.cores=2"
+SPARK_PARAMS+=" --conf spark.driver.memory=3g"
+SPARK_PARAMS+=" --conf spark.driver.memoryOverhead=1g"
 
 # Pass config as spark.app.* Spark conf properties.
 # main_streaming.py reads these via SparkConf and injects them into os.environ
@@ -77,7 +88,7 @@ JOB_ID="$(aws emr-serverless start-job-run \
   --name "streaming-classification-${TIMESTAMP}" \
   --job-driver "{\"sparkSubmit\":{\"entryPoint\":\"$ENTRY_POINT\",\"sparkSubmitParameters\":\"$SPARK_PARAMS\"}}" \
   --configuration-overrides "{\"monitoringConfiguration\":{\"cloudWatchLoggingConfiguration\":{\"enabled\":true},\"s3MonitoringConfiguration\":{\"logUri\":\"s3://${CHECKPOINTS_BUCKET}/emr-serverless/logs/\"}}}" \
-  --execution-timeout-minutes 60 \
+  --execution-timeout-minutes 0 \
   --tags project=galaxy-morph,env=dev,component=streaming-classification \
   --profile "$AWS_PROFILE" \
   --region "$AWS_REGION" \

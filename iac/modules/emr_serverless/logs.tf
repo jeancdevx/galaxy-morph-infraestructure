@@ -4,6 +4,7 @@ locals {
 }
 
 resource "aws_cloudwatch_log_group" "emr_serverless" {
+  #checkov:skip=CKV_AWS_158:KMS encryption for CW logs not required in dev
   name              = local.cloudwatch_log_group_name
   retention_in_days = var.log_retention_days
 }

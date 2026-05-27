@@ -1,5 +1,6 @@
 # CloudWatch log group for AppSync
 resource "aws_cloudwatch_log_group" "appsync" {
+  #checkov:skip=CKV_AWS_158:KMS encryption for CW logs not required in dev
   name              = "/aws/appsync/apis/${aws_appsync_graphql_api.main.id}"
   retention_in_days = var.log_retention_days
 }

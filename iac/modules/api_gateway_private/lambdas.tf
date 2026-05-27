@@ -4,11 +4,14 @@ locals {
 }
 
 resource "aws_cloudwatch_log_group" "upload_api" {
+  #checkov:skip=CKV_AWS_158:KMS encryption for CW logs not required in dev
   name              = "/aws/lambda/${var.name_prefix}-upload-api"
   retention_in_days = var.log_retention_days
 }
 
 resource "aws_lambda_function" "upload_api" {
+  #checkov:skip=CKV_AWS_116:DLQ applies to async invocations only; upload_api is invoked synchronously by API Gateway
+  #checkov:skip=CKV_AWS_173:Environment variables are resource IDs (IMAGES_BUCKET_NAME), not secrets
   function_name = "${var.name_prefix}-upload-api"
   role          = var.upload_api_role_arn
   runtime       = "nodejs22.x"
@@ -35,6 +38,7 @@ resource "aws_lambda_function" "upload_api" {
 }
 
 resource "aws_lambda_permission" "upload_api" {
+  #checkov:skip=CKV_AWS_364:source_arn is scoped to this API Gateway execution ARN
   statement_id  = "AllowAPIGatewayInvoke"
   action        = "lambda:InvokeFunction"
   function_name = aws_lambda_function.upload_api.function_name
@@ -43,11 +47,14 @@ resource "aws_lambda_permission" "upload_api" {
 }
 
 resource "aws_cloudwatch_log_group" "ingestion_api" {
+  #checkov:skip=CKV_AWS_158:KMS encryption for CW logs not required in dev
   name              = "/aws/lambda/${var.name_prefix}-ingestion-api"
   retention_in_days = var.log_retention_days
 }
 
 resource "aws_lambda_function" "ingestion_api" {
+  #checkov:skip=CKV_AWS_116:DLQ applies to async invocations only; ingestion_api is invoked synchronously by API Gateway
+  #checkov:skip=CKV_AWS_173:Environment variables are resource IDs (JOBS_TABLE_NAME, INGESTION_QUEUE_URL), not secrets
   function_name = "${var.name_prefix}-ingestion-api"
   role          = var.ingestion_api_role_arn
   runtime       = "nodejs22.x"
@@ -75,6 +82,7 @@ resource "aws_lambda_function" "ingestion_api" {
 }
 
 resource "aws_lambda_permission" "ingestion_api" {
+  #checkov:skip=CKV_AWS_364:source_arn is scoped to this API Gateway execution ARN
   statement_id  = "AllowAPIGatewayInvoke"
   action        = "lambda:InvokeFunction"
   function_name = aws_lambda_function.ingestion_api.function_name

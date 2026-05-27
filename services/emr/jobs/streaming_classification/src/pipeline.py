@@ -20,12 +20,6 @@ if LIBS_SRC not in sys.path:
 from retry_utils import retry_with_backoff
 from telemetry import BatchTelemetry, log_batch_telemetry, now_seconds
 
-try:
-    from .config import IMAGES_BUCKET, INFERENCE_RETRIES
-except ImportError:
-    from config import IMAGES_BUCKET, INFERENCE_RETRIES
-
-
 def _s3_client(region: str):
     import boto3
 
@@ -64,6 +58,10 @@ def classify_record(
     region: str,
     inference_mode: str,
     sagemaker_endpoint_name: str,
+    images_bucket: str,
+    inference_retries: int,
+    s3_client: Any,
+    sm_runtime_client: Any,
 ) -> dict[str, Any]:
     if inference_mode == "stub":
         inference_result = _stub_classification(payload)
@@ -82,14 +80,11 @@ def classify_record(
     if not sagemaker_endpoint_name:
         raise ValueError("SAGEMAKER_ENDPOINT_NAME is required when INFERENCE_MODE=sagemaker")
 
-    s3 = _s3_client(region)
-    sm_runtime = _sagemaker_runtime_client(region)
-
-    image_obj = s3.get_object(Bucket=IMAGES_BUCKET, Key=payload["imageKey"])
+    image_obj = s3_client.get_object(Bucket=images_bucket, Key=payload["imageKey"])
     image_bytes = image_obj["Body"].read()
 
     def invoke() -> dict[str, Any]:
-        response = sm_runtime.invoke_endpoint(
+        response = sm_runtime_client.invoke_endpoint(
             EndpointName=sagemaker_endpoint_name,
             ContentType="application/octet-stream",
             Body=image_bytes,
@@ -97,7 +92,7 @@ def classify_record(
         body = response["Body"].read().decode("utf-8")
         return json.loads(body)
 
-    inference_result = retry_with_backoff(invoke, attempts=INFERENCE_RETRIES)
+    inference_result = retry_with_backoff(invoke, attempts=inference_retries)
 
     # Normalize SageMaker response: rename "label" → "predictedClass"
     classification = {
@@ -121,6 +116,8 @@ def _make_partition_processor(
     failed_acc: Any,
     inference_mode: str,
     sagemaker_endpoint_name: str,
+    images_bucket: str,
+    inference_retries: int,
 ):
     """"
     Returns a closure that processes one Spark partition on the executor.
@@ -131,18 +128,29 @@ def _make_partition_processor(
     Python late-binding issues with loop-captured variables.
 
     Each executor:
-      1. Creates its own boto3 clients (not serializable — must be local).
+      1. Creates its own boto3 clients once per partition (not per record).
       2. Downloads images from S3.
       3. Calls SageMaker (or stub) per record.
       4. Increments accumulators for telemetry.
       5. Yields result JSON strings — no data returns to the driver.
     """
     def process_partition(partition: Iterator) -> Iterator[str]:
+        s3 = _s3_client(region)
+        sm_runtime = _sagemaker_runtime_client(region)
         for row in partition:
             raw = row.value
             try:
                 payload = parse_record(raw)
-                result = classify_record(payload, region, inference_mode, sagemaker_endpoint_name)
+                result = classify_record(
+                    payload,
+                    region,
+                    inference_mode,
+                    sagemaker_endpoint_name,
+                    images_bucket,
+                    inference_retries,
+                    s3,
+                    sm_runtime,
+                )
                 success_acc.add(1)
                 yield json.dumps(result)
             except Exception as err:  # noqa: BLE001
@@ -163,7 +171,7 @@ def _make_partition_processor(
     return process_partition
 
 
-def process_batch(batch_df: "DataFrame", batch_id: int, region: str, inference_mode: str, sagemaker_endpoint_name: str) -> None:
+def process_batch(batch_df: "DataFrame", batch_id: int, region: str, inference_mode: str, sagemaker_endpoint_name: str, images_bucket: str, inference_retries: int) -> None:
     if batch_df.rdd.isEmpty():
         return
 
@@ -175,7 +183,7 @@ def process_batch(batch_df: "DataFrame", batch_id: int, region: str, inference_m
     failed_acc = sc.accumulator(0)
 
     results_rdd = batch_df.rdd.mapPartitions(
-        _make_partition_processor(region, success_acc, failed_acc, inference_mode, sagemaker_endpoint_name)
+        _make_partition_processor(region, success_acc, failed_acc, inference_mode, sagemaker_endpoint_name, images_bucket, inference_retries)
     )
 
     out_df = spark.createDataFrame(results_rdd.map(lambda v: (v,)), ["value"])

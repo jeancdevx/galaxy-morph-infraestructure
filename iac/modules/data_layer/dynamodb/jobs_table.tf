@@ -1,4 +1,5 @@
 resource "aws_dynamodb_table" "jobs" {
+  #checkov:skip=CKV_AWS_119:DynamoDB default encryption at rest is sufficient in dev; CMK adds cost without security benefit
   name         = var.jobs_table_name
   billing_mode = "PAY_PER_REQUEST"
   hash_key     = var.jobs_table_hash_key
