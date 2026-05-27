@@ -11,7 +11,7 @@
   "dependencies": {
     "@aws-lambda-powertools/logger": "2.33.0",
     "@aws-lambda-powertools/metrics": "2.33.0",
-    "@aws-sdk/client-cognito-identity-provider": "3.1051.0",
+    "@aws-sdk/client-cognito-identity-provider": "3.1053.0",
     "@galaxy-morph/shared": "workspace:*"
   },
   "devDependencies": {
