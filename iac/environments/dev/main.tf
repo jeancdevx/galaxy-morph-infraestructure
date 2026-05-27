@@ -84,10 +84,6 @@ module "data_layer" {
   raw_bucket_name = var.raw_bucket_name
   raw_bucket_arn  = "arn:aws:s3:::${var.raw_bucket_name}"
 
-  kafka_ui_execution_role_arn = module.iam.kafka_ui_execution_role_arn
-  kafka_ui_task_role_arn      = module.iam.kafka_ui_task_role_arn
-  public_subnet_ids           = module.vpc.public_subnet_ids
-
   ingestion_topic_name             = var.ingestion_topic_name
   msk_connect_kafkaconnect_version = var.msk_connect_kafkaconnect_version
   msk_connect_mcu_count            = var.msk_connect_mcu_count
@@ -124,6 +120,21 @@ module "iam" {
   # after the initial SageMaker endpoint has been provisioned.
   sagemaker_endpoint_arn = var.sagemaker_endpoint_arn
   ecr_repository_arn     = var.ecr_repository_arn
+}
+
+module "observability_tools" {
+  source = "../../modules/observability_tools"
+
+  name_prefix                    = "${var.project_name}-${var.environment}"
+  aws_region                     = var.aws_region
+  vpc_id                         = module.vpc.vpc_id
+  public_subnet_ids              = module.vpc.public_subnet_ids
+  msk_security_group_id          = module.security_groups.msk_sg_id
+  msk_bootstrap_brokers_sasl_iam = module.data_layer.msk_bootstrap_brokers_sasl_iam
+  kafka_ui_execution_role_arn    = module.iam.kafka_ui_execution_role_arn
+  kafka_ui_task_role_arn         = module.iam.kafka_ui_task_role_arn
+
+  depends_on = [module.data_layer]
 }
 
 module "emr_serverless" {

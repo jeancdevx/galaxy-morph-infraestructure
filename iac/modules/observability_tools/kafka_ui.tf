@@ -24,7 +24,7 @@ resource "aws_ecs_task_definition" "kafka_ui" {
   container_definitions = jsonencode([
     {
       name      = "kafka-ui"
-      image     = "provectuslabs/kafka-ui:latest"
+      image     = "provectuslabs/kafka-ui:v0.7.2"
       essential = true
 
       portMappings = [
@@ -42,7 +42,7 @@ resource "aws_ecs_task_definition" "kafka_ui" {
         },
         {
           name  = "KAFKA_CLUSTERS_0_BOOTSTRAPSERVERS"
-          value = module.msk.msk_bootstrap_brokers_sasl_iam
+          value = var.msk_bootstrap_brokers_sasl_iam
         },
         {
           name  = "KAFKA_CLUSTERS_0_PROPERTIES_SECURITY_PROTOCOL"
