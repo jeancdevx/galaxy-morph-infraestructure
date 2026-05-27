@@ -60,7 +60,9 @@ def main() -> None:
     from config import (  # noqa: PLC0415
         AWS_REGION,
         CHECKPOINT_S3_URI,
+        IMAGES_BUCKET,
         INFERENCE_MODE,
+        INFERENCE_RETRIES,
         KAFKA_BOOTSTRAP_SERVERS,
         KAFKA_GROUP_ID,
         KAFKA_INGESTION_TOPIC,
@@ -92,7 +94,7 @@ def main() -> None:
 
     query = (
         stream_df.writeStream.foreachBatch(
-            lambda df, bid: process_batch(df, bid, AWS_REGION, INFERENCE_MODE, SAGEMAKER_ENDPOINT_NAME)
+            lambda df, bid: process_batch(df, bid, AWS_REGION, INFERENCE_MODE, SAGEMAKER_ENDPOINT_NAME, IMAGES_BUCKET, INFERENCE_RETRIES)
         )
         .option("checkpointLocation", CHECKPOINT_S3_URI)
         .trigger(processingTime=TRIGGER_INTERVAL)
