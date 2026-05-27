@@ -58,11 +58,6 @@ output "sagemaker_runtime_interface_endpoint_id" {
   value       = module.vpc_endpoints.sagemaker_runtime_interface_endpoint_id
 }
 
-output "lambda_execution_role_arn" {
-  description = "Development Lambda execution role ARN"
-  value       = module.iam.lambda_execution_role_arn
-}
-
 output "results_dispatcher_role_arn" {
   description = "Development results dispatcher role ARN"
   value       = module.iam.results_dispatcher_role_arn
@@ -98,9 +93,24 @@ output "ingestion_queue_name" {
   value       = module.data_layer.ingestion_queue_name
 }
 
-output "lambda_api_role_arn" {
-  description = "Development Lambda API role ARN"
-  value       = module.iam.lambda_api_role_arn
+output "auth_api_role_arn" {
+  description = "Development auth-api Lambda role ARN"
+  value       = module.iam.auth_api_role_arn
+}
+
+output "classification_api_role_arn" {
+  description = "Development classification-api Lambda role ARN"
+  value       = module.iam.classification_api_role_arn
+}
+
+output "upload_api_role_arn" {
+  description = "Development upload-api Lambda role ARN"
+  value       = module.iam.upload_api_role_arn
+}
+
+output "ingestion_api_role_arn" {
+  description = "Development ingestion-api Lambda role ARN"
+  value       = module.iam.ingestion_api_role_arn
 }
 
 output "public_api_endpoint" {

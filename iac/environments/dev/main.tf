@@ -188,14 +188,15 @@ module "cognito" {
 module "api_gateway" {
   source = "../../modules/api_gateway"
 
-  name_prefix           = "${var.project_name}-${var.environment}"
-  aws_region            = var.aws_region
-  cognito_user_pool_id  = module.cognito.user_pool_id
-  cognito_user_pool_arn = module.cognito.user_pool_arn
-  cognito_client_id     = module.cognito.frontend_client_id
-  lambda_api_role_arn   = module.iam.lambda_api_role_arn
-  jobs_table_name       = module.data_layer.jobs_table_name
-  stage_name            = var.api_stage_name
+  name_prefix                 = "${var.project_name}-${var.environment}"
+  aws_region                  = var.aws_region
+  cognito_user_pool_id        = module.cognito.user_pool_id
+  cognito_user_pool_arn       = module.cognito.user_pool_arn
+  cognito_client_id           = module.cognito.frontend_client_id
+  auth_api_role_arn           = module.iam.auth_api_role_arn
+  classification_api_role_arn = module.iam.classification_api_role_arn
+  jobs_table_name             = module.data_layer.jobs_table_name
+  stage_name                  = var.api_stage_name
 
   lambda_timeout     = var.api_lambda_timeout
   lambda_memory_size = var.api_lambda_memory_size
@@ -205,15 +206,16 @@ module "api_gateway" {
 module "api_gateway_private" {
   source = "../../modules/api_gateway_private"
 
-  name_prefix                 = "${var.project_name}-${var.environment}"
-  aws_region                  = var.aws_region
-  cognito_user_pool_id        = module.cognito.user_pool_id
-  cognito_user_pool_arn       = module.cognito.user_pool_arn
-  lambda_private_api_role_arn = module.iam.lambda_private_api_role_arn
-  images_bucket_name          = var.images_bucket_name
-  jobs_table_name             = module.data_layer.jobs_table_name
-  ingestion_queue_url         = module.data_layer.ingestion_queue_url
-  stage_name                  = var.api_stage_name
+  name_prefix            = "${var.project_name}-${var.environment}"
+  aws_region             = var.aws_region
+  cognito_user_pool_id   = module.cognito.user_pool_id
+  cognito_user_pool_arn  = module.cognito.user_pool_arn
+  upload_api_role_arn    = module.iam.upload_api_role_arn
+  ingestion_api_role_arn = module.iam.ingestion_api_role_arn
+  images_bucket_name     = var.images_bucket_name
+  jobs_table_name        = module.data_layer.jobs_table_name
+  ingestion_queue_url    = module.data_layer.ingestion_queue_url
+  stage_name             = var.api_stage_name
 
   lambda_timeout     = var.api_lambda_timeout
   lambda_memory_size = var.api_lambda_memory_size

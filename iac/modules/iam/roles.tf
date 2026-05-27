@@ -1,8 +1,3 @@
-resource "aws_iam_role" "lambda_execution" {
-  name               = "${var.name_prefix}-lambda-execution-role"
-  assume_role_policy = data.aws_iam_policy_document.lambda_assume_role.json
-}
-
 resource "aws_iam_role" "results_dispatcher" {
   name               = "${var.name_prefix}-results-dispatcher-role"
   assume_role_policy = data.aws_iam_policy_document.lambda_assume_role.json
@@ -23,8 +18,23 @@ resource "aws_iam_role" "msk_connect_execution" {
   assume_role_policy = data.aws_iam_policy_document.msk_connect_assume_role.json
 }
 
-resource "aws_iam_role" "lambda_api" {
-  name               = "${var.name_prefix}-lambda-api-role"
+resource "aws_iam_role" "upload_api" {
+  name               = "${var.name_prefix}-upload-api-role"
+  assume_role_policy = data.aws_iam_policy_document.lambda_assume_role.json
+}
+
+resource "aws_iam_role" "ingestion_api" {
+  name               = "${var.name_prefix}-ingestion-api-role"
+  assume_role_policy = data.aws_iam_policy_document.lambda_assume_role.json
+}
+
+resource "aws_iam_role" "auth_api" {
+  name               = "${var.name_prefix}-auth-api-role"
+  assume_role_policy = data.aws_iam_policy_document.lambda_assume_role.json
+}
+
+resource "aws_iam_role" "classification_api" {
+  name               = "${var.name_prefix}-classification-api-role"
   assume_role_policy = data.aws_iam_policy_document.lambda_assume_role.json
 }
 
@@ -62,61 +72,4 @@ resource "aws_iam_role_policy_attachment" "post_confirmation" {
   policy_arn = aws_iam_policy.post_confirmation.arn
 }
 
-resource "aws_iam_role" "lambda_private_api" {
-  name               = "${var.name_prefix}-lambda-private-api-role"
-  assume_role_policy = data.aws_iam_policy_document.lambda_assume_role.json
-}
 
-resource "aws_iam_policy" "lambda_private_api" {
-  name = "${var.name_prefix}-lambda-private-api-policy"
-
-  policy = jsonencode({
-    Version = "2012-10-17"
-    Statement = [
-      {
-        Sid      = "S3PresignedPut"
-        Effect   = "Allow"
-        Action   = ["s3:PutObject"]
-        Resource = "arn:aws:s3:::${var.images_bucket_name}/galaxies/*"
-      },
-      {
-        Sid    = "DynamoDBJobsWrite"
-        Effect = "Allow"
-        Action = [
-          "dynamodb:PutItem",
-          "dynamodb:GetItem",
-          "dynamodb:UpdateItem",
-          "dynamodb:Query",
-        ]
-        Resource = [
-          local.jobs_table_arn,
-          "${local.jobs_table_arn}/index/*",
-        ]
-      },
-      {
-        Sid    = "SQSEnqueue"
-        Effect = "Allow"
-        Action = [
-          "sqs:SendMessage",
-          "sqs:SendMessageBatch",
-        ]
-        Resource = var.ingestion_queue_arn
-      },
-    ]
-  })
-}
-
-resource "aws_iam_role_policy_attachment" "lambda_private_api" {
-  role       = aws_iam_role.lambda_private_api.name
-  policy_arn = aws_iam_policy.lambda_private_api.arn
-}
-
-resource "aws_iam_role_policy_attachment" "lambda_private_api_basic" {
-  role       = aws_iam_role.lambda_private_api.name
-  policy_arn = "arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole"
-}
-
-resource "aws_iam_role_policy_attachment" "lambda_private_api_xray" {
-  role       = aws_iam_role.lambda_private_api.name
-  policy_arn = "arn:aws:iam::aws:policy/AWSXRayDaemonWriteAccess"
-}

@@ -23,8 +23,13 @@ variable "cognito_client_id" {
   type        = string
 }
 
-variable "lambda_api_role_arn" {
-  description = "IAM role ARN assumed by the auth and classification API Lambda functions"
+variable "auth_api_role_arn" {
+  description = "IAM role ARN for the auth-api Lambda function"
+  type        = string
+}
+
+variable "classification_api_role_arn" {
+  description = "IAM role ARN for the classification-api Lambda function"
   type        = string
 }
 
