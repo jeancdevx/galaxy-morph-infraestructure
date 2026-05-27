@@ -1,8 +1,3 @@
-output "lambda_execution_role_arn" {
-  description = "Lambda execution role ARN"
-  value       = aws_iam_role.lambda_execution.arn
-}
-
 output "results_dispatcher_role_arn" {
   description = "Results dispatcher Lambda role ARN"
   value       = aws_iam_role.results_dispatcher.arn
@@ -33,9 +28,14 @@ output "kafka_ui_execution_role_arn" {
   value       = aws_iam_role.kafka_ui_execution.arn
 }
 
-output "lambda_api_role_arn" {
-  description = "Lambda API role ARN (auth + classification public endpoints)"
-  value       = aws_iam_role.lambda_api.arn
+output "auth_api_role_arn" {
+  description = "IAM role ARN for the auth-api Lambda (Cognito authentication)"
+  value       = aws_iam_role.auth_api.arn
+}
+
+output "classification_api_role_arn" {
+  description = "IAM role ARN for the classification-api Lambda (DynamoDB query)"
+  value       = aws_iam_role.classification_api.arn
 }
 
 output "post_confirmation_role_arn" {
@@ -43,7 +43,12 @@ output "post_confirmation_role_arn" {
   value       = aws_iam_role.post_confirmation.arn
 }
 
-output "lambda_private_api_role_arn" {
-  description = "IAM role ARN for the private API Lambdas (upload + ingestion)"
-  value       = aws_iam_role.lambda_private_api.arn
+output "upload_api_role_arn" {
+  description = "IAM role ARN for the upload-api Lambda (S3 presigned URL generation)"
+  value       = aws_iam_role.upload_api.arn
+}
+
+output "ingestion_api_role_arn" {
+  description = "IAM role ARN for the ingestion-api Lambda (DynamoDB write + SQS enqueue)"
+  value       = aws_iam_role.ingestion_api.arn
 }
