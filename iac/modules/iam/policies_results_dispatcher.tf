@@ -15,10 +15,7 @@ data "aws_iam_policy_document" "results_dispatcher" {
     sid = "DynamoDBJobsUpdate"
 
     actions = [
-      "dynamodb:GetItem",
       "dynamodb:UpdateItem",
-      "dynamodb:Query",
-      "dynamodb:Scan",
     ]
 
     resources = [local.jobs_table_arn]
