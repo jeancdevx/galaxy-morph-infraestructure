@@ -90,3 +90,9 @@ variable "ecr_repository_arn" {
   type        = string
   default     = "*"
 }
+
+variable "emr_application_arn" {
+  description = "EMR Serverless application ARN for scoping emrserverless:StartJobRun permission on the watchdog role"
+  type        = string
+  default     = "*"
+}

@@ -1,5 +1,10 @@
 data "aws_caller_identity" "current" {}
 
+locals {
+  name_prefix             = "${var.project_name}-${var.environment}"
+  sagemaker_endpoint_name = "${var.project_name}-${var.environment}-galaxy-classifier"
+}
+
 module "s3" {
   source = "../../modules/s3"
 
@@ -11,7 +16,7 @@ module "s3" {
 module "vpc" {
   source = "../../modules/vpc"
 
-  name_prefix          = "${var.project_name}-${var.environment}"
+  name_prefix          = local.name_prefix
   region_prefix        = var.aws_region
   vpc_cidr_block       = var.vpc_cidr_block
   availability_zones   = var.availability_zones
@@ -23,7 +28,7 @@ module "vpc" {
 module "security_groups" {
   source = "../../modules/security_groups"
 
-  name_prefix          = "${var.project_name}-${var.environment}"
+  name_prefix          = local.name_prefix
   vpc_id               = module.vpc.vpc_id
   msk_port             = var.msk_port
   sagemaker_https_port = var.sagemaker_https_port
@@ -32,7 +37,7 @@ module "security_groups" {
 module "vpc_endpoints" {
   source = "../../modules/vpc_endpoints"
 
-  name_prefix             = "${var.project_name}-${var.environment}"
+  name_prefix             = local.name_prefix
   aws_region              = var.aws_region
   vpc_id                  = module.vpc.vpc_id
   private_subnet_ids      = module.vpc.private_subnet_ids
@@ -51,7 +56,7 @@ module "vpc_endpoints" {
 module "data_layer" {
   source = "../../modules/data_layer"
 
-  name_prefix           = "${var.project_name}-${var.environment}"
+  name_prefix           = local.name_prefix
   aws_region            = var.aws_region
   vpc_id                = module.vpc.vpc_id
   private_subnet_ids    = module.vpc.private_subnet_ids
@@ -96,7 +101,7 @@ module "data_layer" {
 module "iam" {
   source = "../../modules/iam"
 
-  name_prefix    = "${var.project_name}-${var.environment}"
+  name_prefix    = local.name_prefix
   aws_region     = var.aws_region
   aws_account_id = data.aws_caller_identity.current.account_id
 
@@ -114,18 +119,16 @@ module "iam" {
 
   cognito_user_pool_id = module.cognito.user_pool_id
 
-  # sagemaker_endpoint_arn cannot be sourced from module.sagemaker.endpoint_arn
-  # because the SageMaker module depends on module.iam.sagemaker_execution_role_arn,
-  # which would create a circular dependency. Set this variable in terraform.tfvars
-  # after the initial SageMaker endpoint has been provisioned.
   sagemaker_endpoint_arn = var.sagemaker_endpoint_arn
   ecr_repository_arn     = var.ecr_repository_arn
+
+  emr_application_arn = module.emr_serverless.application_arn
 }
 
 module "observability_tools" {
   source = "../../modules/observability_tools"
 
-  name_prefix                    = "${var.project_name}-${var.environment}"
+  name_prefix                    = local.name_prefix
   aws_region                     = var.aws_region
   vpc_id                         = module.vpc.vpc_id
   public_subnet_ids              = module.vpc.public_subnet_ids
@@ -140,7 +143,7 @@ module "observability_tools" {
 module "emr_serverless" {
   source = "../../modules/emr_serverless"
 
-  name_prefix           = "${var.project_name}-${var.environment}"
+  name_prefix           = local.name_prefix
   private_subnet_ids    = module.vpc.private_subnet_ids
   emr_security_group_id = module.security_groups.emr_sg_id
   execution_role_arn    = module.iam.emr_serverless_execution_role_arn
@@ -167,7 +170,7 @@ module "emr_serverless" {
 module "sagemaker" {
   source = "../../modules/sagemaker"
 
-  name_prefix            = "${var.project_name}-${var.environment}"
+  name_prefix            = local.name_prefix
   execution_role_arn     = module.iam.sagemaker_execution_role_arn
   model_artifact_s3_uri  = var.sagemaker_model_artifact_s3_uri
   image_uri              = var.sagemaker_image_uri
@@ -188,7 +191,7 @@ module "sagemaker" {
 module "cognito" {
   source = "../../modules/cognito"
 
-  name_prefix                = "${var.project_name}-${var.environment}"
+  name_prefix                = local.name_prefix
   app_email_subject          = var.project_name
   aws_region                 = var.aws_region
   aws_account_id             = data.aws_caller_identity.current.account_id
@@ -199,7 +202,7 @@ module "cognito" {
 module "api_gateway" {
   source = "../../modules/api_gateway"
 
-  name_prefix                 = "${var.project_name}-${var.environment}"
+  name_prefix                 = local.name_prefix
   aws_region                  = var.aws_region
   cognito_user_pool_id        = module.cognito.user_pool_id
   cognito_user_pool_arn       = module.cognito.user_pool_arn
@@ -217,7 +220,7 @@ module "api_gateway" {
 module "api_gateway_private" {
   source = "../../modules/api_gateway_private"
 
-  name_prefix            = "${var.project_name}-${var.environment}"
+  name_prefix            = local.name_prefix
   aws_region             = var.aws_region
   cognito_user_pool_id   = module.cognito.user_pool_id
   cognito_user_pool_arn  = module.cognito.user_pool_arn
@@ -238,7 +241,7 @@ module "api_gateway_private" {
 module "appsync" {
   source = "../../modules/appsync"
 
-  name_prefix          = "${var.project_name}-${var.environment}"
+  name_prefix          = local.name_prefix
   aws_region           = var.aws_region
   cognito_user_pool_id = module.cognito.user_pool_id
   log_retention_days   = var.api_log_retention_days
@@ -247,7 +250,7 @@ module "appsync" {
 module "results_dispatcher" {
   source = "../../modules/results_dispatcher"
 
-  name_prefix                 = "${var.project_name}-${var.environment}"
+  name_prefix                 = local.name_prefix
   results_dispatcher_role_arn = module.iam.results_dispatcher_role_arn
   private_subnet_ids          = module.vpc.private_subnet_ids
   lambda_private_sg_id        = module.security_groups.lambda_private_sg_id
@@ -265,7 +268,7 @@ module "results_dispatcher" {
 module "kafka_setup" {
   source = "../../modules/kafka_setup"
 
-  name_prefix          = "${var.project_name}-${var.environment}"
+  name_prefix          = local.name_prefix
   execution_role_arn   = module.iam.kafka_setup_role_arn
   private_subnet_ids   = module.vpc.private_subnet_ids
   lambda_private_sg_id = module.security_groups.lambda_private_sg_id
@@ -280,4 +283,25 @@ module "kafka_setup" {
   log_retention_days       = var.api_log_retention_days
 
   depends_on = [module.data_layer, module.iam]
+}
+
+module "emr_watchdog" {
+  source = "../../modules/emr_watchdog"
+
+  name_prefix            = local.name_prefix
+  execution_role_arn     = module.iam.emr_watchdog_role_arn
+  emr_application_id     = module.emr_serverless.application_id
+  emr_execution_role_arn = module.iam.emr_serverless_execution_role_arn
+
+  checkpoints_bucket_name = var.checkpoints_bucket_name
+  images_bucket_name      = var.images_bucket_name
+  msk_bootstrap_servers   = module.data_layer.msk_bootstrap_brokers_sasl_iam
+
+  sagemaker_endpoint_name = local.sagemaker_endpoint_name
+
+  kafka_ingestion_topic = var.ingestion_topic_name
+  kafka_results_topic   = var.results_topic_name
+  log_retention_days    = var.api_log_retention_days
+
+  depends_on = [module.emr_serverless, module.iam]
 }
