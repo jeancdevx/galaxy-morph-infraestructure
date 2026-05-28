@@ -33,6 +33,11 @@ output "kafka_setup_role_arn" {
   value       = aws_iam_role.kafka_setup.arn
 }
 
+output "emr_watchdog_role_arn" {
+  description = "IAM role ARN for EMR job launcher and watchdog Lambdas"
+  value       = aws_iam_role.emr_watchdog.arn
+}
+
 output "auth_api_role_arn" {
   description = "IAM role ARN for the auth-api Lambda (Cognito authentication)"
   value       = aws_iam_role.auth_api.arn

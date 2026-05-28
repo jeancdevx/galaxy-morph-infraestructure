@@ -43,6 +43,11 @@ resource "aws_iam_role" "kafka_setup" {
   assume_role_policy = data.aws_iam_policy_document.lambda_assume_role.json
 }
 
+resource "aws_iam_role" "emr_watchdog" {
+  name               = "${var.name_prefix}-emr-watchdog-role"
+  assume_role_policy = data.aws_iam_policy_document.lambda_assume_role.json
+}
+
 resource "aws_iam_role" "post_confirmation" {
   name               = "${var.name_prefix}-post-confirmation-role"
   assume_role_policy = data.aws_iam_policy_document.lambda_assume_role.json
