@@ -1,11 +1,11 @@
 AWS_PROFILE ?= default
 
 # Directory names (underscores) → used for paths
-LAMBDA_DIRS_LIST := auth_api classification_api ingestion_api upload_api post_confirmation results_dispatcher
+LAMBDA_DIRS_LIST := auth_api classification_api ingestion_api upload_api post_confirmation results_dispatcher emr_watchdog
 LAMBDA_DIRS := $(addprefix services/lambdas/,$(LAMBDA_DIRS_LIST))
 
 # Package names (hyphens) → used for pnpm --filter
-LAMBDA_PKGS := auth-api classification-api ingestion-api upload-api post-confirmation results-dispatcher
+LAMBDA_PKGS := auth-api classification-api ingestion-api upload-api post-confirmation results-dispatcher emr-watchdog
 
 # Python Lambdas (built with pip + zip, not pnpm)
 PYTHON_LAMBDA_DIRS := services/lambdas/kafka_setup
