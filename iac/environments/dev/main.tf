@@ -1,5 +1,9 @@
 data "aws_caller_identity" "current" {}
 
+data "aws_route53_zone" "main" {
+  zone_id = var.route53_zone_id
+}
+
 locals {
   name_prefix             = "${var.project_name}-${var.environment}"
   sagemaker_endpoint_name = "${var.project_name}-${var.environment}-galaxy-classifier"
@@ -304,4 +308,18 @@ module "emr_watchdog" {
   log_retention_days    = var.api_log_retention_days
 
   depends_on = [module.emr_serverless, module.iam]
+}
+
+module "acm" {
+  source = "../../modules/acm"
+
+  providers = {
+    aws           = aws
+    aws.us_east_1 = aws.us_east_1
+  }
+
+  name_prefix               = local.name_prefix
+  domain_name               = var.domain_name
+  subject_alternative_names = var.certificate_subject_alternative_names
+  route53_zone_id           = data.aws_route53_zone.main.zone_id
 }

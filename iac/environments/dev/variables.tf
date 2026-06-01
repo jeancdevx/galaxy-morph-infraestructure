@@ -492,3 +492,20 @@ variable "dispatcher_lambda_memory_size" {
   type        = number
   default     = 256
 }
+
+variable "domain_name" {
+  description = "Primary domain name for the project (must be registered in Route53)"
+  type        = string
+  default     = "galaxymorph.com"
+}
+
+variable "certificate_subject_alternative_names" {
+  description = "SANs to include in the ACM certificate alongside the primary domain"
+  type        = list(string)
+  default     = ["*.galaxymorph.com"]
+}
+
+variable "route53_zone_id" {
+  description = "Route53 hosted zone ID for galaxymorph.com"
+  type        = string
+}
