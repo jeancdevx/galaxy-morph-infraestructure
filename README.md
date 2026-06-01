@@ -128,11 +128,11 @@ fase 4:
 
 # 4a. Modelo SageMaker (necesita best.pth en el directorio)
 
-cd services/ml/model_bundle make upload
+cd services/ml/model_bundle && make upload
 
 # 4b. Job EMR (pipeline.py + deps)
 
-cd services/emr/jobs/streaming_classification make upload
+cd services/emr/jobs/streaming_classification && make upload
 
 fase 5: en tfvars: enable_msk_connect_connector = true # ya estaba
 sagemaker_enable_endpoint = true # ← cambiar
