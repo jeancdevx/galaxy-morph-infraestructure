@@ -509,3 +509,23 @@ variable "route53_zone_id" {
   description = "Route53 hosted zone ID for galaxymorph.com"
   type        = string
 }
+
+# WAF
+variable "waf_cloudfront_rate_limit" {
+  description = "Max requests per IP in 5 minutes for the CloudFront WAF (CLOUDFRONT scope)"
+  type        = number
+  default     = 2000
+}
+
+variable "waf_regional_rate_limit" {
+  description = "Max requests per IP in 5 minutes for the AppSync WAF (REGIONAL scope)"
+  type        = number
+  default     = 500
+}
+
+variable "waf_log_retention_days" {
+  description = "Retention period in days for WAF logs"
+  type        = number
+  default     = 14
+}
+

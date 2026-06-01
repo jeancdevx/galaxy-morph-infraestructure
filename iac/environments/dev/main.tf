@@ -323,3 +323,28 @@ module "acm" {
   subject_alternative_names = var.certificate_subject_alternative_names
   route53_zone_id           = data.aws_route53_zone.main.zone_id
 }
+
+# WAF for CloudFront — must be CLOUDFRONT scope in us-east-1
+module "waf_cloudfront" {
+  source = "../../modules/waf"
+
+  providers = {
+    aws = aws.us_east_1
+  }
+
+  name_prefix        = local.name_prefix
+  scope              = "CLOUDFRONT"
+  rate_limit         = var.waf_cloudfront_rate_limit
+  log_retention_days = var.waf_log_retention_days
+}
+
+# WAF for AppSync — REGIONAL scope in the main region
+module "waf_regional" {
+  source = "../../modules/waf"
+
+  name_prefix        = local.name_prefix
+  scope              = "REGIONAL"
+  rate_limit         = var.waf_regional_rate_limit
+  log_retention_days = var.waf_log_retention_days
+}
+
