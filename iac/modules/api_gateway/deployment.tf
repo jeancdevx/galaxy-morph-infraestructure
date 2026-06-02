@@ -22,8 +22,6 @@ resource "aws_api_gateway_deployment" "public" {
 
 resource "aws_api_gateway_stage" "public" {
   #checkov:skip=CKV_AWS_120:Stage-level caching has per-GB cost; not enabled in dev
-  #checkov:skip=CKV2_AWS_77:WAF association planned for Q12
-  #checkov:skip=CKV2_AWS_78:WAF association planned for Q12
   deployment_id        = aws_api_gateway_deployment.public.id
   rest_api_id          = aws_api_gateway_rest_api.public.id
   stage_name           = var.stage_name
