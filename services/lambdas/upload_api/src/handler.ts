@@ -4,7 +4,7 @@ import {
   type APIGatewayProxyResult
 } from 'aws-lambda'
 
-import { jsonResponse } from '@galaxy-morph/shared'
+import { jsonResponse, resolveCorsOrigin } from '@galaxy-morph/shared'
 
 import { logger, metrics } from './lib/powertools.js'
 import {
@@ -16,6 +16,7 @@ export const handler = async (
   event: APIGatewayProxyEvent
 ): Promise<APIGatewayProxyResult> => {
   logger.appendKeys({ path: event.path, method: event.httpMethod })
+  const corsOrigin = resolveCorsOrigin(event)
 
   try {
     const body = JSON.parse(event.body ?? '{}') as {
@@ -23,9 +24,13 @@ export const handler = async (
     }
 
     if (!Array.isArray(body.images) || body.images.length === 0) {
-      return jsonResponse(400, {
-        message: 'images array is required and must not be empty'
-      })
+      return jsonResponse(
+        400,
+        {
+          message: 'images array is required and must not be empty'
+        },
+        corsOrigin
+      )
     }
 
     const userId = event.requestContext.authorizer?.claims?.['sub'] as string
@@ -37,7 +42,7 @@ export const handler = async (
       uploads.length
     )
 
-    return jsonResponse(200, { uploads })
+    return jsonResponse(200, { uploads }, corsOrigin)
   } catch (err) {
     const error = err as Error & { statusCode?: number }
 
@@ -47,12 +52,12 @@ export const handler = async (
       error.message.includes('contentType') ||
       error.message.includes('Maximum')
     ) {
-      return jsonResponse(400, { message: error.message })
+      return jsonResponse(400, { message: error.message }, corsOrigin)
     }
 
     logger.error('Upload API error', { error })
     metrics.addMetric('UploadApiError', MetricUnit.Count, 1)
-    return jsonResponse(500, { message: 'Internal server error' })
+    return jsonResponse(500, { message: 'Internal server error' }, corsOrigin)
   } finally {
     metrics.publishStoredMetrics()
   }
