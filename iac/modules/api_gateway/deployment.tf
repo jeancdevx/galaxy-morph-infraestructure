@@ -12,6 +12,12 @@ resource "aws_api_gateway_deployment" "public" {
       aws_api_gateway_integration.signup_post.id,
       aws_api_gateway_integration.signin_post.id,
       aws_api_gateway_integration.history_get.id,
+      aws_api_gateway_method.auth_signup_options.id,
+      aws_api_gateway_method.auth_signin_options.id,
+      aws_api_gateway_method.history_options.id,
+      aws_api_gateway_integration.auth_signup_options.id,
+      aws_api_gateway_integration.auth_signin_options.id,
+      aws_api_gateway_integration.history_options.id,
     ]))
   }
 
