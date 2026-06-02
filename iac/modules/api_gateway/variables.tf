@@ -61,3 +61,9 @@ variable "log_retention_days" {
   type        = number
   default     = 14
 }
+
+variable "cors_allow_origins" {
+  description = "List of allowed CORS origins. Used to populate CORS_ALLOW_ORIGINS in Lambda env vars so handlers can echo back the matching origin. OPTIONS preflight always returns * (Bearer-auth APIs do not need credentialed preflights)."
+  type        = list(string)
+  default     = ["*"]
+}
