@@ -83,6 +83,9 @@ def classify_record(
     image_obj = s3_client.get_object(Bucket=images_bucket, Key=payload["imageKey"])
     image_bytes = image_obj["Body"].read()
 
+    if not image_bytes:
+        raise ValueError(f"Image object is empty (0 bytes): {payload['imageKey']}")
+
     def invoke() -> dict[str, Any]:
         response = sm_runtime_client.invoke_endpoint(
             EndpointName=sagemaker_endpoint_name,
@@ -163,8 +166,8 @@ def _make_partition_processor(
                     "jobId": p.get("jobId", "unknown"),
                     "clientId": p.get("clientId", "unknown"),
                     "imageKey": p.get("imageKey", "unknown"),
-                    "status": "ERROR",
-                    "error": str(err),
+                    "status": "FAILED",
+                    "errorMessage": str(err),
                 }
                 yield json.dumps(fallback)
 
