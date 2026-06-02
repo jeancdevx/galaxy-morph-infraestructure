@@ -25,6 +25,7 @@ resource "aws_lambda_function" "auth_api" {
     variables = {
       CLIENT_ID               = var.cognito_client_id
       USER_POOL_ID            = var.cognito_user_pool_id
+      CORS_ALLOW_ORIGINS      = join(",", var.cors_allow_origins)
       POWERTOOLS_SERVICE_NAME = "auth-api"
       LOG_LEVEL               = "INFO"
     }
@@ -67,6 +68,7 @@ resource "aws_lambda_function" "classification_api" {
   environment {
     variables = {
       JOBS_TABLE_NAME         = var.jobs_table_name
+      CORS_ALLOW_ORIGINS      = join(",", var.cors_allow_origins)
       POWERTOOLS_SERVICE_NAME = "classification-api"
       LOG_LEVEL               = "INFO"
     }

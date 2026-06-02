@@ -50,7 +50,7 @@ describe('startStreamingJob', () => {
     const emrCall = mockSend.mock.calls[0][0]
     expect(emrCall).toBeInstanceOf(StartJobRunCommand)
     expect(emrCall.input.applicationId).toBe('app-123')
-    expect(emrCall.input.executionTimeoutMinutes).toBe(0)
+    expect(emrCall.input.executionTimeoutMinutes).toBe(10080)
   })
 
   it('persists the jobRunId to SSM', async () => {

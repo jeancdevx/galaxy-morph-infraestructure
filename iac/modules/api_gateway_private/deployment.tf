@@ -15,6 +15,10 @@ resource "aws_api_gateway_deployment" "private" {
       aws_api_gateway_method.classifications_post.id,
       aws_api_gateway_integration.upload_presigned_post.id,
       aws_api_gateway_integration.classifications_post.id,
+      aws_api_gateway_method.upload_presigned_options.id,
+      aws_api_gateway_method.classifications_options.id,
+      aws_api_gateway_integration.upload_presigned_options.id,
+      aws_api_gateway_integration.classifications_options.id,
     ]))
   }
 
@@ -30,8 +34,6 @@ resource "aws_api_gateway_deployment" "private" {
 
 resource "aws_api_gateway_stage" "private" {
   #checkov:skip=CKV_AWS_120:Stage-level caching has per-GB cost; not enabled in dev
-  #checkov:skip=CKV2_AWS_77:WAF association planned for Q12
-  #checkov:skip=CKV2_AWS_78:WAF association planned for Q12
   deployment_id        = aws_api_gateway_deployment.private.id
   rest_api_id          = aws_api_gateway_rest_api.private.id
   stage_name           = var.stage_name
