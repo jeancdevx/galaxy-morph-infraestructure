@@ -25,6 +25,7 @@ resource "aws_lambda_function" "upload_api" {
   environment {
     variables = {
       IMAGES_BUCKET_NAME      = var.images_bucket_name
+      CORS_ALLOW_ORIGINS      = join(",", var.cors_allow_origins)
       POWERTOOLS_SERVICE_NAME = "upload-api"
       LOG_LEVEL               = "INFO"
     }
@@ -69,6 +70,7 @@ resource "aws_lambda_function" "ingestion_api" {
     variables = {
       JOBS_TABLE_NAME         = var.jobs_table_name
       INGESTION_QUEUE_URL     = var.ingestion_queue_url
+      CORS_ALLOW_ORIGINS      = join(",", var.cors_allow_origins)
       POWERTOOLS_SERVICE_NAME = "ingestion-api"
       LOG_LEVEL               = "INFO"
     }
