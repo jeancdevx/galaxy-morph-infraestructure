@@ -114,7 +114,7 @@ output "ingestion_api_role_arn" {
 }
 
 output "public_api_endpoint" {
-  description = "Development public API Gateway endpoint URL"
+  description = "Raw API Gateway invoke URL (public). Direct access is blocked by WAF (X-Origin-Verify); traffic must flow through CloudFront at var.domain_name."
   value       = module.api_gateway.public_api_endpoint
 }
 
@@ -203,6 +203,11 @@ output "s3_models_bucket_name" {
   value       = module.s3.models_bucket_name
 }
 
+output "s3_spa_bucket_name" {
+  description = "S3 bucket where the SPA static assets are deployed"
+  value       = module.s3.spa_bucket_name
+}
+
 output "sagemaker_endpoint_name" {
   description = "SageMaker galaxy classifier endpoint name (use as SAGEMAKER_ENDPOINT_NAME in submit script)"
   value       = module.sagemaker.endpoint_name
@@ -214,7 +219,7 @@ output "sagemaker_endpoint_arn" {
 }
 
 output "private_api_endpoint" {
-  description = "Invoke URL for the private REST API (upload + ingestion)"
+  description = "Raw API Gateway invoke URL (private: upload + ingestion). Direct access is blocked by WAF (X-Origin-Verify); traffic must flow through CloudFront."
   value       = module.api_gateway_private.private_api_endpoint
 }
 
@@ -229,13 +234,13 @@ output "ingestion_api_function_name" {
 }
 
 output "appsync_graphql_url" {
-  description = "AppSync GraphQL endpoint URL"
-  value       = module.appsync.graphql_url
+  description = "AppSync GraphQL endpoint — custom domain (https://api.galaxymorph.com/graphql)"
+  value       = module.appsync_domain.graphql_url
 }
 
 output "appsync_realtime_url" {
-  description = "AppSync real-time WebSocket endpoint URL"
-  value       = module.appsync.realtime_url
+  description = "AppSync real-time WebSocket endpoint — custom domain (wss://api.galaxymorph.com/graphql/realtime)"
+  value       = module.appsync_domain.realtime_url
 }
 
 output "appsync_api_id" {
@@ -246,4 +251,19 @@ output "appsync_api_id" {
 output "results_dispatcher_function_name" {
   description = "Results dispatcher Lambda function name"
   value       = module.results_dispatcher.results_dispatcher_function_name
+}
+
+output "cloudfront_app_url" {
+  description = "Primary application URL served by CloudFront (https://galaxymorph.com)"
+  value       = "https://${var.domain_name}"
+}
+
+output "cloudfront_distribution_id" {
+  description = "CloudFront distribution ID — required for cache invalidations in CI/CD (aws cloudfront create-invalidation)"
+  value       = module.cloudfront.distribution_id
+}
+
+output "cloudfront_distribution_domain_name" {
+  description = "CloudFront-assigned domain (e.g. d1234abcd.cloudfront.net) — useful before DNS propagates"
+  value       = module.cloudfront.distribution_domain_name
 }

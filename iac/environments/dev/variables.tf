@@ -529,3 +529,37 @@ variable "waf_log_retention_days" {
   default     = 14
 }
 
+# CloudFront / SPA
+variable "spa_bucket_name" {
+  description = "Name of the S3 bucket for the SPA frontend assets"
+  type        = string
+  default     = "galaxy-morph-spa"
+}
+
+variable "cloudfront_price_class" {
+  description = "CloudFront price class: PriceClass_100 (US/EU), PriceClass_200, PriceClass_All"
+  type        = string
+  default     = "PriceClass_100"
+}
+
+variable "cloudfront_log_retention_days" {
+  description = "Days to retain CloudFront access logs before S3 expiration"
+  type        = number
+  default     = 90
+}
+
+variable "cloudfront_aliases" {
+  description = "Additional domain aliases for the CloudFront distribution (e.g. www)"
+  type        = list(string)
+  default     = ["www.galaxymorph.com"]
+}
+
+# AppSync custom domain
+variable "appsync_custom_domain" {
+  description = "Custom domain for AppSync GraphQL/WebSocket endpoint (e.g. api.galaxymorph.com)"
+  type        = string
+  default     = "api.galaxymorph.com"
+}
+
+
+

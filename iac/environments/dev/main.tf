@@ -9,12 +9,29 @@ locals {
   sagemaker_endpoint_name = "${var.project_name}-${var.environment}-galaxy-classifier"
 }
 
+# CloudFront origin-verify secret
+resource "random_password" "origin_verify_secret" {
+  length  = 32
+  special = false
+}
+
+resource "aws_ssm_parameter" "origin_verify_secret" {
+  name  = "/${local.name_prefix}/cloudfront/origin-verify-secret"
+  type  = "SecureString"
+  value = random_password.origin_verify_secret.result
+
+  lifecycle {
+    ignore_changes = [value]
+  }
+}
+
 module "s3" {
   source = "../../modules/s3"
 
   images_bucket_name      = var.images_bucket_name
   checkpoints_bucket_name = var.checkpoints_bucket_name
   models_bucket_name      = var.models_bucket_name
+  spa_bucket_name         = var.spa_bucket_name
 }
 
 module "vpc" {
@@ -310,6 +327,30 @@ module "emr_watchdog" {
   depends_on = [module.emr_serverless, module.iam]
 }
 
+module "cloudfront" {
+  source = "../../modules/cloudfront"
+
+  name_prefix     = local.name_prefix
+  domain_name     = var.domain_name
+  aliases         = var.cloudfront_aliases
+  price_class     = var.cloudfront_price_class
+  route53_zone_id = data.aws_route53_zone.main.zone_id
+
+  spa_bucket_id     = module.s3.spa_bucket_name
+  spa_bucket_arn    = module.s3.spa_bucket_arn
+  images_bucket_id  = module.s3.images_bucket_name
+  images_bucket_arn = module.s3.images_bucket_arn
+
+  api_gateway_invoke_url = module.api_gateway.public_api_endpoint
+
+  certificate_arn = module.acm.certificate_arn
+  waf_web_acl_arn = module.waf_cloudfront.web_acl_arn
+
+  origin_verify_secret = random_password.origin_verify_secret.result
+
+  log_retention_days = var.cloudfront_log_retention_days
+}
+
 module "acm" {
   source = "../../modules/acm"
 
@@ -324,7 +365,7 @@ module "acm" {
   route53_zone_id           = data.aws_route53_zone.main.zone_id
 }
 
-# WAF for CloudFront — must be CLOUDFRONT scope in us-east-1
+# WAF for CloudFront — CLOUDFRONT scope in us-east-1
 module "waf_cloudfront" {
   source = "../../modules/waf"
 
@@ -346,5 +387,53 @@ module "waf_regional" {
   scope              = "REGIONAL"
   rate_limit         = var.waf_regional_rate_limit
   log_retention_days = var.waf_log_retention_days
+}
+
+# WAF for API Gateway — REGIONAL scope
+module "waf_api_gateway" {
+  source = "../../modules/waf"
+
+  name_prefix                = "${local.name_prefix}-apigw"
+  scope                      = "REGIONAL"
+  rate_limit                 = var.waf_cloudfront_rate_limit
+  log_retention_days         = var.waf_log_retention_days
+  origin_verify_header_value = random_password.origin_verify_secret.result
+}
+
+resource "aws_wafv2_web_acl_association" "public_api" {
+  resource_arn = module.api_gateway.public_stage_arn
+  web_acl_arn  = module.waf_api_gateway.web_acl_arn
+}
+
+resource "aws_wafv2_web_acl_association" "private_api" {
+  resource_arn = module.api_gateway_private.private_stage_arn
+  web_acl_arn  = module.waf_api_gateway.web_acl_arn
+}
+
+# ACM certificate for AppSync
+module "acm_regional" {
+  source = "../../modules/acm"
+
+  providers = {
+    aws           = aws
+    aws.us_east_1 = aws.us_east_1
+  }
+
+  name_prefix               = "${local.name_prefix}-regional"
+  domain_name               = var.appsync_custom_domain
+  subject_alternative_names = []
+  route53_zone_id           = data.aws_route53_zone.main.zone_id
+}
+
+module "appsync_domain" {
+  source = "../../modules/appsync_domain"
+
+  name_prefix     = local.name_prefix
+  appsync_api_id  = module.appsync.api_id
+  appsync_api_arn = module.appsync.api_arn
+  domain_name     = var.appsync_custom_domain
+  certificate_arn = module.acm_regional.certificate_arn
+  waf_web_acl_arn = module.waf_regional.web_acl_arn
+  route53_zone_id = data.aws_route53_zone.main.zone_id
 }
 
