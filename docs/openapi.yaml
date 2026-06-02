@@ -1,0 +1,521 @@
+openapi: '3.1.0'
+
+info:
+  title: Galaxy Morph API
+  version: '1.0.0'
+  description: |
+    REST API for Galaxy Morph — a galaxy morphology classification platform.
+
+    All REST endpoints are served through CloudFront at `https://galaxymorph.com/api/v1`.
+    Real-time classification results are delivered via AppSync WebSocket at
+    `wss://api.galaxymorph.com/graphql/realtime`.
+
+    ## Authentication
+    Protected endpoints require a Cognito **ID token** obtained from `POST /auth/signin`,
+    sent as `Authorization: Bearer <idToken>`.
+
+    ## Typical flow
+    1. `POST /auth/signup` — register
+    2. `POST /auth/signin` — obtain tokens
+    3. `POST /upload/presigned` — get S3 presigned PUT URLs
+    4. `PUT <uploadUrl>` — upload each image directly to S3 (see note below)
+    5. `POST /classifications` — enqueue images for classification (returns `jobId`)
+    6. AppSync subscription `onClassification(clientId)` — receive results per image
+    7. `GET /classifications/history` — browse community feed
+
+    > **S3 direct upload**: step 4 targets S3 directly using the presigned URL,
+    > not this API. The request is a plain `PUT` with `Content-Type: image/jpeg`
+    > (or the MIME type declared in step 3) and the binary image as the body.
+
+servers:
+  - url: https://galaxymorph.com/api/v1
+    description: Production (CloudFront)
+  - url: http://localhost:3000/api/v1
+    description: Local development
+
+tags:
+  - name: Auth
+    description: User registration and authentication via Cognito
+  - name: Classifications
+    description: Galaxy image classification jobs and community history
+  - name: Upload
+    description: S3 presigned URL generation for direct browser uploads
+
+paths:
+  /auth/signup:
+    post:
+      operationId: signUp
+      summary: Register a new user
+      tags: [Auth]
+      description: |
+        Creates a new Cognito user. After registration the user must confirm
+        their email before they can sign in.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AuthRequest'
+            example:
+              email: user@example.com
+              password: 'Password123!'
+      responses:
+        '201':
+          description: User registered successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MessageResponse'
+              example:
+                message:
+                  'User registered. Check your email to confirm your account.'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '409':
+          description: Email already registered
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                message: 'Email already registered'
+        '500':
+          $ref: '#/components/responses/InternalError'
+
+  /auth/signin:
+    post:
+      operationId: signIn
+      summary: Sign in and obtain tokens
+      tags: [Auth]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AuthRequest'
+            example:
+              email: user@example.com
+              password: 'Password123!'
+      responses:
+        '200':
+          description: Authentication successful
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SignInResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          description: Invalid credentials or unconfirmed user
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                invalid_credentials:
+                  summary: Wrong email or password
+                  value:
+                    message: 'Invalid credentials'
+                not_confirmed:
+                  summary: Email not confirmed
+                  value:
+                    message: 'Please confirm your email first'
+        '500':
+          $ref: '#/components/responses/InternalError'
+
+  /classifications/history:
+    get:
+      operationId: getClassificationHistory
+      summary: Community classification feed
+      tags: [Classifications]
+      description: |
+        Paginated global feed of completed classification jobs across all users.
+        Results are sorted newest-first. Maximum page size is 50.
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: limit
+          in: query
+          description: Number of items to return (max 50)
+          required: false
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 50
+            default: 50
+          example: 20
+        - name: nextToken
+          in: query
+          description: |
+            Pagination cursor returned by a previous response.
+            Base64-encoded DynamoDB `LastEvaluatedKey`.
+          required: false
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Page of classification results
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HistoryResponse'
+        '400':
+          description: Invalid nextToken
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                message: 'Invalid nextToken'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '500':
+          $ref: '#/components/responses/InternalError'
+
+  /upload/presigned:
+    post:
+      operationId: getPresignedUrls
+      summary: Generate S3 presigned PUT URLs
+      tags: [Upload]
+      description: |
+        Returns one presigned PUT URL per image. Each URL is valid for **1 hour**.
+        After obtaining the URLs, upload each image directly to S3 using an HTTP
+        `PUT` request with the image bytes as the body and the declared
+        `Content-Type` as the header — no AWS credentials needed.
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PresignedUrlRequest'
+            example:
+              images:
+                - filename: galaxy1.jpg
+                  contentType: image/jpeg
+                - filename: galaxy2.png
+                  contentType: image/png
+      responses:
+        '200':
+          description: Presigned URLs generated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PresignedUrlResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '500':
+          $ref: '#/components/responses/InternalError'
+
+  /classifications:
+    post:
+      operationId: enqueueClassification
+      summary: Enqueue images for classification
+      tags: [Classifications]
+      description: |
+        Validates ownership and daily quota, creates a job in DynamoDB, and
+        enqueues each image in SQS for the EMR Serverless classification pipeline.
+
+        - **Public users** (group `public-user`): max **10 images/day**.
+        - **Scientist users** (group `scientist-user`): no quota limit.
+
+        The `key` for each image must be the S3 object key returned by
+        `POST /upload/presigned` (format: `galaxies/<userId>/<jobId>/<filename>`).
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ClassificationRequest'
+            example:
+              images:
+                - key: 'galaxies/419b75b0-20e1-706b-f735-7974cb072797/7d5ab6f6-2032-4fff-8cda-ab6a49b172dc/galaxy1.jpg'
+      responses:
+        '202':
+          description: Job accepted and enqueued
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ClassificationJobResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          description: Attempting to classify images that belong to another user
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                message: 'Forbidden: you can only classify images you uploaded'
+        '429':
+          description: Daily quota exceeded (public users only)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                message:
+                  'Daily quota exceeded. Public users are limited to 10 images
+                  per day.'
+        '500':
+          $ref: '#/components/responses/InternalError'
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      description: Cognito ID token obtained from `POST /auth/signin`
+
+  schemas:
+    AuthRequest:
+      type: object
+      required: [email, password]
+      properties:
+        email:
+          type: string
+          format: email
+          description: User email address (used as Cognito username)
+        password:
+          type: string
+          minLength: 8
+          description:
+            'Must meet Cognito policy: uppercase, lowercase, number, symbol'
+
+    SignInResponse:
+      type: object
+      required: [accessToken, idToken, refreshToken, expiresIn, tokenType]
+      properties:
+        accessToken:
+          type: string
+          description: Cognito access token (use for Cognito API calls)
+        idToken:
+          type: string
+          description:
+            Cognito ID token (use as Bearer token for Galaxy Morph API calls)
+        refreshToken:
+          type: string
+          description: Long-lived token to refresh the session
+        expiresIn:
+          type: integer
+          description:
+            Seconds until the access/ID tokens expire (typically 3600)
+        tokenType:
+          type: string
+          example: Bearer
+
+    PresignedUrlRequest:
+      type: object
+      required: [images]
+      properties:
+        images:
+          type: array
+          minItems: 1
+          items:
+            type: object
+            required: [filename, contentType]
+            properties:
+              filename:
+                type: string
+                example: galaxy1.jpg
+              contentType:
+                type: string
+                example: image/jpeg
+                enum:
+                  - image/jpeg
+                  - image/jpg
+                  - image/png
+
+    PresignedUrlResponse:
+      type: object
+      required: [uploads]
+      properties:
+        uploads:
+          type: array
+          items:
+            type: object
+            required: [uploadUrl, key]
+            properties:
+              uploadUrl:
+                type: string
+                format: uri
+                description: S3 presigned PUT URL. Valid for 1 hour.
+              key:
+                type: string
+                description: |
+                  S3 object key to pass in `POST /classifications`.
+                  Format: `galaxies/<userId>/<uploadId>/<filename>`
+                example: 'galaxies/419b75b0-20e1-706b-f735-7974cb072797/7d5ab6f6-2032-4fff-8cda-ab6a49b172dc/galaxy1.jpg'
+
+    ClassificationRequest:
+      type: object
+      required: [images]
+      properties:
+        images:
+          type: array
+          minItems: 1
+          items:
+            type: object
+            required: [key]
+            properties:
+              key:
+                type: string
+                description: S3 object key from `POST /upload/presigned`
+                example: 'galaxies/419b75b0-20e1-706b-f735-7974cb072797/7d5ab6f6-2032-4fff-8cda-ab6a49b172dc/galaxy1.jpg'
+
+    ClassificationJobResponse:
+      type: object
+      required: [jobId, status, imageCount, createdAt]
+      properties:
+        jobId:
+          type: string
+          format: uuid
+          description: Unique identifier for the classification job
+        status:
+          type: string
+          enum: [QUEUED]
+          description: Initial job status. Monitor via AppSync subscription.
+        imageCount:
+          type: integer
+          description: Number of images enqueued
+        createdAt:
+          type: string
+          format: date-time
+          description: ISO 8601 timestamp
+
+    HistoryResponse:
+      type: object
+      required: [items, count]
+      properties:
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/ClassificationJob'
+        count:
+          type: integer
+          description: Number of items in this page
+        nextToken:
+          type: string
+          description: |
+            Pagination cursor. Pass as `?nextToken=<value>` to fetch the next page.
+            Absent when this is the last page.
+
+    ClassificationJob:
+      type: object
+      properties:
+        jobId:
+          type: string
+          format: uuid
+        userId:
+          type: string
+          format: uuid
+        status:
+          type: string
+          enum: [QUEUED, PROCESSING, COMPLETED, FAILED]
+        imageCount:
+          type: integer
+        createdAt:
+          type: string
+          format: date-time
+
+    MessageResponse:
+      type: object
+      required: [message]
+      properties:
+        message:
+          type: string
+
+    ErrorResponse:
+      type: object
+      required: [message]
+      properties:
+        message:
+          type: string
+
+  responses:
+    BadRequest:
+      description: Missing or invalid request parameters
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+          example:
+            message: 'email and password are required'
+
+    Unauthorized:
+      description: Missing or expired Bearer token
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+          example:
+            message: 'Unauthorized'
+
+    InternalError:
+      description: Unexpected server error
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+          example:
+            message: 'Internal server error'
+
+# ─── AppSync GraphQL / WebSocket ─────────────────────────────────────────────
+#
+# Endpoint : wss://api.galaxymorph.com/graphql/realtime
+# Protocol : graphql-ws  (Sec-WebSocket-Protocol: graphql-ws)
+# Auth     : Cognito ID token in the connection payload header
+#
+# Schema (simplified):
+#
+#   type ClassificationResult {
+#     jobId      : ID!
+#     clientId   : ID!       # Cognito sub of the user
+#     imageKey   : String!   # S3 key of the classified image
+#     status     : String!   # COMPLETED | FAILED
+#     classification: Classification  # present when status = COMPLETED
+#     errorMessage: String            # present when status = FAILED
+#   }
+#
+#   type Classification {
+#     predictedClass : String!   # e.g. "Spiral", "Elliptical", "Irregular"
+#     confidence     : Float!    # 0.0 – 1.0
+#     probabilities  : AWSJSON!  # map of class → probability
+#   }
+#
+#   subscription {
+#     onClassification(clientId: ID!): ClassificationResult
+#   }
+#
+# Subscription example (graphql-ws protocol):
+#
+#   { "type": "connection_init" }
+#
+#   {
+#     "id": "1",
+#     "type": "subscribe",
+#     "payload": {
+#       "query": "subscription OnResult($cid: ID!) { onClassification(clientId: $cid) { jobId imageKey status classification { predictedClass confidence } } }",
+#       "variables": { "cid": "<cognito-sub>" },
+#       "extensions": {
+#         "authorization": {
+#           "Authorization": "<idToken>",
+#           "host": "api.galaxymorph.com"
+#         }
+#       }
+#     }
+#   }
+#
+# The connection URL must include a base64-encoded Authorization header as a
+# query parameter:
+#   ?header=<base64({"Authorization":"<idToken>","host":"api.galaxymorph.com"})>
+#   &payload=e30%3D   (base64 of "{}")
+# ─────────────────────────────────────────────────────────────────────────────
