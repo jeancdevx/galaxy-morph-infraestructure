@@ -344,7 +344,8 @@ module "cloudfront" {
   images_bucket_id  = module.s3.images_bucket_name
   images_bucket_arn = module.s3.images_bucket_arn
 
-  api_gateway_invoke_url = module.api_gateway.public_api_endpoint
+  api_gateway_invoke_url         = module.api_gateway.public_api_endpoint
+  private_api_gateway_invoke_url = module.api_gateway_private.private_api_endpoint
 
   certificate_arn = module.acm.certificate_arn
   waf_web_acl_arn = module.waf_cloudfront.web_acl_arn

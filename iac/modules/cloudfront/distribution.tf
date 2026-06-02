@@ -1,8 +1,10 @@
 data "aws_region" "current" {}
 
 locals {
-  _api_no_scheme  = trimprefix(var.api_gateway_invoke_url, "https://")
-  api_origin_host = split("/", local._api_no_scheme)[0]
+  _api_no_scheme          = trimprefix(var.api_gateway_invoke_url, "https://")
+  api_origin_host         = split("/", local._api_no_scheme)[0]
+  _api_private_no_scheme  = trimprefix(var.private_api_gateway_invoke_url, "https://")
+  api_private_origin_host = split("/", local._api_private_no_scheme)[0]
 }
 
 resource "aws_cloudfront_distribution" "this" {
@@ -34,6 +36,23 @@ resource "aws_cloudfront_distribution" "this" {
 
     # Secret header — API Gateway WAF blocks any request missing this header,
     # enforcing that all traffic goes through CloudFront.
+    custom_header {
+      name  = "x-origin-verify"
+      value = var.origin_verify_secret
+    }
+
+    custom_origin_config {
+      http_port              = 80
+      https_port             = 443
+      origin_protocol_policy = "https-only"
+      origin_ssl_protocols   = ["TLSv1.2"]
+    }
+  }
+
+  origin {
+    origin_id   = "api-private"
+    domain_name = local.api_private_origin_host
+
     custom_header {
       name  = "x-origin-verify"
       value = var.origin_verify_secret
@@ -82,6 +101,57 @@ resource "aws_cloudfront_distribution" "this" {
     min_ttl     = 0
     default_ttl = 604800   # 7 days
     max_ttl     = 31536000 # 1 year
+  }
+
+  # /api/v1/upload/*: Private API Gateway — presigned URL generation.
+  ordered_cache_behavior {
+    path_pattern           = "/api/v1/upload/*"
+    target_origin_id       = "api-private"
+    viewer_protocol_policy = "redirect-to-https"
+    allowed_methods        = ["DELETE", "GET", "HEAD", "OPTIONS", "PATCH", "POST", "PUT"]
+    cached_methods         = ["GET", "HEAD"]
+    compress               = false
+
+    forwarded_values {
+      query_string = true
+      headers      = ["Authorization", "Origin", "Accept", "Content-Type"]
+      cookies { forward = "none" }
+    }
+
+    function_association {
+      event_type   = "viewer-request"
+      function_arn = aws_cloudfront_function.api_rewrite.arn
+    }
+
+    min_ttl     = 0
+    default_ttl = 0
+    max_ttl     = 0
+  }
+
+  # /api/v1/classifications (exact): Private API Gateway — enqueue classification jobs.
+  # NOTE: /api/v1/classifications/history is handled by the /api/v1/* behavior below.
+  ordered_cache_behavior {
+    path_pattern           = "/api/v1/classifications"
+    target_origin_id       = "api-private"
+    viewer_protocol_policy = "redirect-to-https"
+    allowed_methods        = ["DELETE", "GET", "HEAD", "OPTIONS", "PATCH", "POST", "PUT"]
+    cached_methods         = ["GET", "HEAD"]
+    compress               = false
+
+    forwarded_values {
+      query_string = true
+      headers      = ["Authorization", "Origin", "Accept", "Content-Type"]
+      cookies { forward = "none" }
+    }
+
+    function_association {
+      event_type   = "viewer-request"
+      function_arn = aws_cloudfront_function.api_rewrite.arn
+    }
+
+    min_ttl     = 0
+    default_ttl = 0
+    max_ttl     = 0
   }
 
   # /api/v1/*: API Gateway — no caching, forward auth headers and query strings.
