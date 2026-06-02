@@ -3,6 +3,11 @@ output "public_api_id" {
   value       = aws_api_gateway_rest_api.public.id
 }
 
+output "public_stage_arn" {
+  description = "ARN of the API Gateway stage — used for WAF WebACL association"
+  value       = aws_api_gateway_stage.public.arn
+}
+
 output "public_api_endpoint" {
   description = "REST API invoke URL — https://<id>.execute-api.<region>.amazonaws.com/<stage>"
   value       = aws_api_gateway_stage.public.invoke_url

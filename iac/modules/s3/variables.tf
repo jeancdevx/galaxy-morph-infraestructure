@@ -12,3 +12,8 @@ variable "models_bucket_name" {
   description = "Name of the S3 bucket for ML model artifacts"
   type        = string
 }
+
+variable "spa_bucket_name" {
+  description = "Name of the S3 bucket for the SPA frontend (served via CloudFront OAC)"
+  type        = string
+}

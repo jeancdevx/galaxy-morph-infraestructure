@@ -27,3 +27,13 @@ output "models_bucket_arn" {
   description = "ARN of the models S3 bucket"
   value       = aws_s3_bucket.this["models"].arn
 }
+
+output "spa_bucket_name" {
+  description = "Name of the SPA frontend S3 bucket"
+  value       = aws_s3_bucket.this["spa"].id
+}
+
+output "spa_bucket_arn" {
+  description = "ARN of the SPA frontend S3 bucket"
+  value       = aws_s3_bucket.this["spa"].arn
+}
