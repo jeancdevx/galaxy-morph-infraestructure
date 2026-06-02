@@ -24,7 +24,12 @@ variable "images_bucket_arn" {
 }
 
 variable "api_gateway_invoke_url" {
-  description = "Full invoke URL from API Gateway (e.g. https://xxx.execute-api.us-east-2.amazonaws.com/v1)"
+  description = "Full invoke URL from the public API Gateway (e.g. https://xxx.execute-api.us-east-2.amazonaws.com/v1)"
+  type        = string
+}
+
+variable "private_api_gateway_invoke_url" {
+  description = "Full invoke URL from the private API Gateway (e.g. https://xxx.execute-api.us-east-2.amazonaws.com/v1)"
   type        = string
 }
 
