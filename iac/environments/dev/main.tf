@@ -233,6 +233,8 @@ module "api_gateway" {
   jobs_table_name             = module.data_layer.jobs_table_name
   stage_name                  = var.api_stage_name
 
+  cors_allow_origins = ["https://${var.domain_name}", "http://localhost:3000"]
+
   lambda_timeout     = var.api_lambda_timeout
   lambda_memory_size = var.api_lambda_memory_size
   log_retention_days = var.api_log_retention_days
@@ -255,6 +257,7 @@ module "api_gateway_private" {
   lambda_timeout     = var.api_lambda_timeout
   lambda_memory_size = var.api_lambda_memory_size
   log_retention_days = var.api_log_retention_days
+  cors_allow_origins = ["https://${var.domain_name}", "http://localhost:3000"]
 
   depends_on = [module.api_gateway]
 }
