@@ -7,134 +7,12 @@ meta:
   modified: 1779677351363
   description: ""
 collection:
-  - url: "{{ _.base_url }}/auth/signup"
-    name: "1. Auth: Registro de usuario"
-    meta:
-      id: req_8e1d9a44c3534169abe1640d6ab1577c
-      created: 1779305781700
-      modified: 1779844170647
-      isPrivate: false
-      description: Registra un nuevo usuario en Cognito. El email llega como username.
-      sortKey: 0
-    method: POST
-    body:
-      mimeType: application/json
-      text: |-
-        {
-          "email": "jcode2006@gmail.com",
-          "password": "Password123!"
-        }
-    headers:
-      - name: Content-Type
-        value: application/json
-    settings:
-      renderRequestBody: true
-      encodeUrl: true
-      followRedirects: global
-      cookies:
-        send: true
-        store: true
-      rebuildPath: true
-  - url: "{{ _.base_url }}/auth/signin"
-    name: "2. Auth: Inicio de sesión"
-    meta:
-      id: req_f7100fbe1aa54e8aba7d16dc7c75d5ab
-      created: 1779305781701
-      modified: 1779849853099
-      isPrivate: false
-      description: Devuelve accessToken, idToken y refreshToken. Copia el idToken en
-        la variable id_token del environment.
-      sortKey: 100
-    method: POST
-    body:
-      mimeType: application/json
-      text: |-
-        {
-          "email": "jcode2006@gmail.com",
-          "password": "Password123!"
-        }
-    headers:
-      - name: Content-Type
-        value: application/json
-    authentication:
-      type: none
-    settings:
-      renderRequestBody: true
-      encodeUrl: true
-      followRedirects: global
-      cookies:
-        send: true
-        store: true
-      rebuildPath: true
-  - url: "{{ _.base_url }}/classifications/history"
-    name: "3. Clasificaciones: Historial global de la comunidad"
-    meta:
-      id: req_c2da4eee83fa474ba3f385742750ae52
-      created: 1779305781702
-      modified: 1779314150337
-      isPrivate: false
-      description: Feed global paginado (máx 50). Pasa nextToken como query param para
-        ir a la siguiente página.
-      sortKey: 200
-    method: GET
-    parameters:
-      - name: limit
-        value: "50"
-        disabled: false
-      - name: nextToken
-        value: ""
-        disabled: true
-    headers:
-      - name: Authorization
-        value: Bearer {{ _.id_token }}
-      - name: Content-Type
-        value: application/json
-    settings:
-      renderRequestBody: true
-      encodeUrl: true
-      followRedirects: global
-      cookies:
-        send: true
-        store: true
-      rebuildPath: true
-  - url: "{{ _.private_base_url }}/upload/presigned"
-    name: "4.1. Upload: Obtener URLs prefirmadas para subida directa a S3"
-    meta:
-      id: req_4d0aad52077649e493b56971e83b17bf
-      created: 1779305781703
-      modified: 1779676115167
-      isPrivate: false
-      description: Genera N presigned PUT URLs válidos por 1 hora. El cliente usa cada
-        uploadUrl para hacer PUT directamente a S3 con la imagen en binario.
-      sortKey: 300
-    method: POST
-    body:
-      mimeType: application/json
-      text: |-
-        {
-          "images": [
-            { "filename": "galaxy1.jpg", "contentType": "image/jpg" }
-          ]
-        }
-    headers:
-      - name: Authorization
-        value: Bearer {{ _.id_token }}
-      - name: Content-Type
-        value: application/json
-    settings:
-      renderRequestBody: true
-      encodeUrl: true
-      followRedirects: global
-      cookies:
-        send: true
-        store: true
-      rebuildPath: true
-  - url: "{{ _.private_base_url }}/classifications"
+  - url: "{{ _.base_url }}/{{ _.private_api_url }}/classifications"
     name: "5. Ingestión: Encolar imágenes subidas para clasificación"
     meta:
-      id: req_afbcd2c81c37448caa369dc43ab528f0
+      id: req_9bea9805a54b4eb392dbdb4c8b4694d3
       created: 1779305781704
-      modified: 1779851825853
+      modified: 1780369395185
       isPrivate: false
       description: "Valida cuota diaria (público: 10 imgs/día), crea job en DynamoDB y
         encola mensajes en SQS. Devuelve 202 con jobId. Devuelve 429 si se
@@ -143,10 +21,10 @@ collection:
     method: POST
     body:
       mimeType: application/json
-      text: >-
+      text: |-
         {
           "images": [
-            { "key": "galaxies/316b65f0-3001-70a9-39a1-36b35a4cf452/3f78623d-01dc-4a3b-bbd3-9b3035c06c5f/galaxy1.jpg" }
+            { "key": "{{ _.image_upload_key }}" }
           ]
         }
     headers:
@@ -154,6 +32,10 @@ collection:
         value: Bearer {{ _.id_token }}
       - name: Content-Type
         value: application/json
+      - name: User-Agent
+        value: insomnia/12.5.0
+        description: ""
+        disabled: false
     settings:
       renderRequestBody: true
       encodeUrl: true
@@ -162,14 +44,16 @@ collection:
         send: true
         store: true
       rebuildPath: true
-  - url: https://galaxy-morph-images.s3.us-east-2.amazonaws.com/galaxies/316b65f0-3001-70a9-39a1-36b35a4cf452/3f78623d-01dc-4a3b-bbd3-9b3035c06c5f/galaxy1.jpg?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Content-Sha256=UNSIGNED-PAYLOAD&X-Amz-Credential=ASIA2XQXZVKAQNWTJMGD%2F20260527%2Fus-east-2%2Fs3%2Faws4_request&X-Amz-Date=20260527T030559Z&X-Amz-Expires=3600&X-Amz-Security-Token=IQoJb3JpZ2luX2VjEMP%2F%2F%2F%2F%2F%2F%2F%2F%2F%2FwEaCXVzLWVhc3QtMiJHMEUCIQDhk1nZwwaBCNGklxhyt%2FJnoA0TxSqLjlm7aPVRNKGjjQIgAWRdm%2BPLaFOP1sOii4OQtznKgPFWMpx4fgxz6y%2B2Nq0qkwQIjP%2F%2F%2F%2F%2F%2F%2F%2F%2F%2FARAAGgw3Mzc3MTA1NDk2MzMiDHGx%2BJpY3UFNeTw%2BwCrnA%2ByXPpLGiuFAwTt6a9dX7OR%2FKpE2wHTdQiH4v4r5lE8SqW%2F8nGjTL8DheeYTVfFpCLrbHUDi36GfHIUHAJqw1yGkAfOPVJ569pAqrQfIBaoRd9nvCX%2F00GttkVg41XmyGHp4LaqNfa96wzPwsakU4B07jtWTKIzzUMXwgXEaSGe85LlEUO8I0lCHXisJamPRGJGeubV3SseJqiNLWcY3D%2FZQ39tev4BkKVItsjKyglTc8FBE5yQoYHXQn%2FZJX2Of6pqVK877B00w56uXD9CLgIKvljFRasm2z1JxRf3WzXQSzScB%2FdGw5d97AphuwjurdIcwuANvuJU05Jl3OtXBbImiZac56kIcpPcLXBjuTXo1rNbt95RHAGsAgFHI9TVALGcRUovSnuK0AvFgO8OFuyJSIX8RhVlDdgPVf7gDudUwlbZoFelTC4p0rEOV5l29z%2FUPG5zyKpfH2SoMnw8XNGBZXXMxaDr3IqCWeJNt9zuYM03tEEAhIoG6GShTw5y%2F5MfSbV9h883yL7yDfc9InGv6GcBPlGarYRJHE7A4LsE%2BvIpvNHDPALrvhaOUSMdEFqqIDMjzHajdFMXEV3W5F4cSfsoxmDpRi1pJUX6AoWy7ThHgBG89%2FM1IaKg1AyQ9EfXd7Ixl75Uwlr%2FZ0AY6ogGJxBtlswR%2BpIyrHp%2BPV6mhiA81yoaLfgvT4htfXrzJXbWJc3ZQLPDa5xvbkNIT9F5hnwjn4t6TfliuaKInp61zdPiBdtd8UUxCQfRig2eNTmjzd64xpbxfrCQZLcaDjCL%2FbFy7Owy5t127AB9xBWNpb9ztGhwa850EIL0UXl%2BzC8wfaVqkyyf%2FddJzf2QB7GHXebCZ57Zk9rAy%2FhUx4WNVr9Y%3D&X-Amz-Signature=ed378389a87c8b28b15639fe3181fafe270e28f3db771bf1ff15bab5c469f5db&X-Amz-SignedHeaders=host&x-amz-checksum-crc32=AAAAAA%3D%3D&x-amz-sdk-checksum-algorithm=CRC32&x-id=PutObject
+  - url: "{{ _.presigned_url }}"
     name: "4.2. Upload: Image to S3 Bucket"
     meta:
-      id: req_9b4f8c3d5bf644b3a1d85987f5859bc0
+      id: req_b3883a744f134a07861d18296d61f61a
       created: 1779316210990
-      modified: 1779851213563
+      modified: 1780370192379
       isPrivate: false
-      description: ""
+      description: Copia el uploadUrl devuelto por la petición 4.1 en la variable
+        presigned_url del environment. Selecciona la imagen local a subir como
+        body binario (application/octet-stream).
       sortKey: 350
     method: PUT
     body:
@@ -190,13 +74,143 @@ collection:
         send: true
         store: true
       rebuildPath: true
-  - url: wss://{{ _.appsync_graphql_realtime }}/graphql?header={{
-      _.appsync_ws_header }}&payload={{ _.appsync_ws_payload }}
+  - url: "{{ _.base_url }}/{{ _.public_api_url }}/auth/signup"
+    name: "1. Auth: Registro de usuario"
+    meta:
+      id: req_df8405d5a887489c891d91d616530d87
+      created: 1780368271207
+      modified: 1780368398188
+      isPrivate: false
+      description: ""
+      sortKey: -1780368271207
+    method: POST
+    body:
+      mimeType: application/json
+      text: |-
+        {
+          "email": "jcode2006@gmail.com",
+          "password": "Password123!"
+        }
+    headers:
+      - name: Content-Type
+        value: application/json
+      - name: User-Agent
+        value: insomnia/12.5.0
+        description: ""
+        disabled: false
+    settings:
+      renderRequestBody: true
+      encodeUrl: true
+      followRedirects: global
+      cookies:
+        send: true
+        store: true
+      rebuildPath: true
+  - url: "{{ _.base_url }}/{{ _.public_api_url }}/auth/signin"
+    name: "2. Auth: Inicio de sesión"
+    meta:
+      id: req_dc56ed062a6c432a889a9575ae696aaf
+      created: 1780368339360
+      modified: 1780368411363
+      isPrivate: false
+      description: ""
+      sortKey: 150
+    method: POST
+    body:
+      mimeType: application/json
+      text: |-
+        {
+          "email": "jcode2006@gmail.com",
+          "password": "Password123!"
+        }
+    headers:
+      - name: Content-Type
+        value: application/json
+      - name: User-Agent
+        value: insomnia/12.5.0
+        description: ""
+        disabled: false
+    settings:
+      renderRequestBody: true
+      encodeUrl: true
+      followRedirects: global
+      cookies:
+        send: true
+        store: true
+      rebuildPath: true
+  - url: "{{ _.base_url }}/{{ _.public_api_url }}/classifications/history"
+    name: "3. Clasificaciones: Historial global de la comunidad"
+    meta:
+      id: req_3cd0422cbdbc4d6aaac21dec7201833a
+      created: 1780368438490
+      modified: 1780368619614
+      isPrivate: false
+      description: ""
+      sortKey: 225
+    method: GET
+    headers:
+      - name: User-Agent
+        value: insomnia/12.5.0
+        description: ""
+        disabled: false
+      - name: Authorization
+        value: Bearer {{ _.id_token }}
+        description: ""
+        disabled: false
+    settings:
+      renderRequestBody: true
+      encodeUrl: true
+      followRedirects: global
+      cookies:
+        send: true
+        store: true
+      rebuildPath: true
+  - url: "{{ _.base_url }}/{{ _.private_api_url }}/upload/presigned"
+    name: "4.1. Upload: Obtener URLs prefirmadas para subida directa a S3"
+    meta:
+      id: req_dcef8e3b937f41128fa6faa9f3d84f83
+      created: 1780368553729
+      modified: 1780369185127
+      isPrivate: false
+      description: ""
+      sortKey: 287.5
+    method: POST
+    body:
+      mimeType: application/json
+      text: |-
+        {
+          "images": [
+            { "filename": "galaxy1.jpg", "contentType": "image/jpg" }
+          ]
+        }
+    headers:
+      - name: Content-Type
+        value: application/json
+      - name: User-Agent
+        value: insomnia/12.5.0
+        description: ""
+        disabled: false
+      - name: Authorization
+        value: Bearer {{ _.id_token }}
+        description: ""
+        disabled: false
+    authentication:
+      type: none
+    settings:
+      renderRequestBody: true
+      encodeUrl: true
+      followRedirects: global
+      cookies:
+        send: true
+        store: true
+      rebuildPath: true
+  - url: "{{ _.appsync_graphql_realtime }}?header={{ _.appsync_ws_header
+      }}&payload={{ _.appsync_ws_payload }}"
     name: "6. AppSync: Suscripción en tiempo real (WebSocket)"
     meta:
-      id: ws-req_04607965325448deaf04f99d7c28f954
+      id: ws-req_f3fd8f32601c4fbc9df1200ae14573d8
       created: 1779849997414
-      modified: 1779852017158
+      modified: 1780369499679
       description: ""
       sortKey: 500
     settings:
@@ -227,14 +241,17 @@ environments:
   meta:
     id: env_0774be618e7e4af1b3d05e491feba2c6
     created: 1779305781670
-    modified: 1779851309526
+    modified: 1780370216914
     isPrivate: false
   data:
-    base_url: https://sa6kdg09cb.execute-api.us-east-2.amazonaws.com/v1
-    private_base_url: https://rnn6sc0wq6.execute-api.us-east-2.amazonaws.com/v1
-    id_token: eyJraWQiOiIyUVhqSjlXd29Bek52Q2V3aUdURk1QT21YcjIxMlZvaHJsTUxoMnNLTFVrPSIsImFsZyI6IlJTMjU2In0.eyJzdWIiOiIzMTZiNjVmMC0zMDAxLTcwYTktMzlhMS0zNmIzNWE0Y2Y0NTIiLCJjb2duaXRvOmdyb3VwcyI6WyJwdWJsaWMtdXNlciJdLCJlbWFpbF92ZXJpZmllZCI6dHJ1ZSwiaXNzIjoiaHR0cHM6Ly9jb2duaXRvLWlkcC51cy1lYXN0LTIuYW1hem9uYXdzLmNvbS91cy1lYXN0LTJfUWU4eGdjN3NpIiwiY29nbml0bzp1c2VybmFtZSI6IjMxNmI2NWYwLTMwMDEtNzBhOS0zOWExLTM2YjM1YTRjZjQ1MiIsIm9yaWdpbl9qdGkiOiIyYjk1OTc1NS0zNzE2LTQ5NWYtODMxYS05Y2JiMjg2YmQ4NDciLCJhdWQiOiI1cWFxaTBkcGhvcTA1bWZwcGttYmhpaGplbSIsImV2ZW50X2lkIjoiMTUxNGNiZDAtNDJkNC00MDQzLWIyYzgtYTExMjM4ZWY2M2IzIiwidG9rZW5fdXNlIjoiaWQiLCJhdXRoX3RpbWUiOjE3Nzk4NTExNzEsImV4cCI6MTc3OTg1NDc3MSwiaWF0IjoxNzc5ODUxMTcxLCJqdGkiOiIxODQwYmY2NS1jYTYwLTQzNGUtOGZlOC1hOTU2ZGFiMDFhZWUiLCJlbWFpbCI6Impjb2RlMjAwNkBnbWFpbC5jb20ifQ.DR0_nFuA_VGOSaM2kdW7oekNDPN7JvQjsyGDQnGIxKja3EaSbZK4WJMFkwwk2JYc_Scc2hGoqEPeMetP3mz6oN75cen2G4OTf7id_TCauv5dKk8ivyq9gGebsVUgoDEgNEH4_l8eIn9ePYCnYLhNqUYJtUmfTsMA_VUz-3NqzJoFAtHEA8P85el1C8bjSCUS_qT4jePMlD-yTqLq3LEaEt3l12GjncoQSV9JVEJi5LaQIad5x8xMqUARMK8XOdWkYeQ77pkhWx3yVkrHBLXHKa2Iqgt1-iCVFZHmFKwNPuoL-p1HgBiXNJgQxd5e3b_r93HcPhYerfN9fvvbRKweow
-    user_sub: 316b65f0-3001-70a9-39a1-36b35a4cf452
-    appsync_graphql_realtime: 74kj3tugizdhtfwddntkzikzdm.appsync-realtime-api.us-east-2.amazonaws.com
-    appsync_graphql_host: 74kj3tugizdhtfwddntkzikzdm.appsync-api.us-east-2.amazonaws.com
-    appsync_ws_header: eyJBdXRob3JpemF0aW9uIjoiZXlKcmFXUWlPaUl5VVZocVNqbFhkMjlCZWs1MlEyVjNhVWRVUmsxUVQyMVljakl4TWxadmFISnNUVXhvTW5OTFRGVnJQU0lzSW1Gc1p5STZJbEpUTWpVMkluMC5leUp6ZFdJaU9pSXpNVFppTmpWbU1DMHpNREF4TFRjd1lUa3RNemxoTVMwek5tSXpOV0UwWTJZME5USWlMQ0pqYjJkdWFYUnZPbWR5YjNWd2N5STZXeUp3ZFdKc2FXTXRkWE5sY2lKZExDSmxiV0ZwYkY5MlpYSnBabWxsWkNJNmRISjFaU3dpYVhOeklqb2lhSFIwY0hNNkx5OWpiMmR1YVhSdkxXbGtjQzUxY3kxbFlYTjBMVEl1WVcxaGVtOXVZWGR6TG1OdmJTOTFjeTFsWVhOMExUSmZVV1U0ZUdkak4zTnBJaXdpWTI5bmJtbDBienAxYzJWeWJtRnRaU0k2SWpNeE5tSTJOV1l3TFRNd01ERXROekJoT1Mwek9XRXhMVE0yWWpNMVlUUmpaalExTWlJc0ltOXlhV2RwYmw5cWRHa2lPaUl5WWprMU9UYzFOUzB6TnpFMkxUUTVOV1l0T0RNeFlTMDVZMkppTWpnMlltUTRORGNpTENKaGRXUWlPaUkxY1dGeGFUQmtjR2h2Y1RBMWJXWndjR3R0WW1ocGFHcGxiU0lzSW1WMlpXNTBYMmxrSWpvaU1UVXhOR05pWkRBdE5ESmtOQzAwTURRekxXSXlZemd0WVRFeE1qTTRaV1kyTTJJeklpd2lkRzlyWlc1ZmRYTmxJam9pYVdRaUxDSmhkWFJvWDNScGJXVWlPakUzTnprNE5URXhOekVzSW1WNGNDSTZNVGMzT1RnMU5EYzNNU3dpYVdGMElqb3hOemM1T0RVeE1UY3hMQ0pxZEdraU9pSXhPRFF3WW1ZMk5TMWpZVFl3TFRRek5HVXRPR1psT0MxaE9UVTJaR0ZpTURGaFpXVWlMQ0psYldGcGJDSTZJbXBqYjJSbE1qQXdOa0JuYldGcGJDNWpiMjBpZlEuRFIwX25GdUFfVkdPU2FNMmtkVzdvZWtORFBON0p2UWpzeUdEUW5HSXhLamEzRWFTYlpLNFdKTUZrd3drMkpZY19TY2MyaEdvcUVQZU1ldFAzbXo2b043NWNlbjJHNE9UZjdpZF9UQ2F1djVkS2s4aXZ5cTlnR2Vic1ZVZ29ERWdORUg0X2w4ZUluOWVQWUNuWUxoTnFVWUp0VW1mVHNNQV9WVXotM05xekpvRkF0SEVBOFA4NWVsMUM4YmpTQ1VTX3FUNGplUE1sRC15VHFMcTNMRWFFdDNsMTJHam5jb1FTVjlKVkVKaTVMYVFJYWQ1eDh4TXFVQVJNSzhYT2RXa1llUTc3cGtoV3gzeVZrckhCTFhIS2EySXFndDEtaUNWRlpIbUZLd05QdW9MLXAxSGdCaVhOSmdReGQ1ZTNiX3I5M0hjUGhZZXJmTjlmdnZiUkt3ZW93IiwiaG9zdCI6Ijc0a2ozdHVnaXpkaHRmd2RkbnRremlremRtLmFwcHN5bmMtYXBpLnVzLWVhc3QtMi5hbWF6b25hd3MuY29tIn0%3D
+    base_url: https://galaxymorph.com
+    public_api_url: api/v1
+    private_api_url: api/v1
+    presigned_url: https://galaxy-morph-images.s3.us-east-2.amazonaws.com/galaxies/419b75b0-20e1-706b-f735-7974cb072797/00757881-ea4a-4888-ac95-e201b5c8277c/galaxy1.jpg?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Content-Sha256=UNSIGNED-PAYLOAD&X-Amz-Credential=ASIA2XQXZVKARIG2YV4N%2F20260602%2Fus-east-2%2Fs3%2Faws4_request&X-Amz-Date=20260602T031636Z&X-Amz-Expires=3600&X-Amz-Security-Token=IQoJb3JpZ2luX2VjEFMaCXVzLWVhc3QtMiJHMEUCIQDRJ6y9lpX%2BX6aLoFvTGBdxyKkDSO7UiGqwUFby%2BarWqAIgMedxVIuzMZlhO%2Br2uIPhtUcyD6qiR1KKKMmykYy34rYqigQIHBAAGgw3Mzc3MTA1NDk2MzMiDC74z0JAml04cV6KHSrnA5Q8PKgK3BJlmY8t4fCwHN57tCGESyotkMSsK8f0uhCfrnsxpOVZSmwp8RKeX6ErKFmvOMzOEZTYj3TdC%2FFshMSyav0T91jOyZlTjp0ZxSywJr4Qix5UVcJHUxtbgHqd8WICeWdPnW0JY4OTm7jk%2FDpF40cy6g26ndIJlXz1MxtcApI9PK3K1kSjGii3v6S4lMOzJPHQfSIEDMsT6SA3DMrrYA6sCiLooRTRhVdGW0mjoMvN%2FHT7aFwls9XqOIrDe0qycxlOwx0FwDPHrwPt4yI%2BoMQSAsZVEQ1765YUJTpZCIuGfn8%2BjR%2Fm68PV8%2F0Y%2FuhML%2By2hXNrNWgJ%2BByjTCYeQNR%2BIGK%2BoiEVqhkp%2BnGgKqb%2Bm2CdR5HngsyTsoXdij7OTtM%2BP0Fm0pbOrTWp1soQa14fgX8ICFfvpSQJouGlHYM%2BIUyMV%2F5cHmWB7rsJ3%2By4AZuCZAuqyWNt4%2FHEUwgM2eu0966KbGy7OBp3ILlxF4%2FhEscCIWG9o3zxwW2HS93%2BrchJkyQPU%2BD0XQEpAa7AurFqtqYvvZx8wlVdqhwdsJ5OX0oVKqOxMWvJnmgAw8YgKzuILrzlXMy8ShEf8WxzrJOaim4MocV2aFn3VSlO0nvkR8Ujb%2FZ1MkDBj%2FUrGAgCvKcC4E8wlJb50AY6ogFBL6ZbPzWydVzPpGaJt83uej8jOXgPInGSUf2ntG06COQ%2B9BCffRYJVgMRNrxcs9VAIIHraoWpwae6E4tFRz0sSJqVkmx9sMfDhkGJQSqeTEWHR3eqYZcxPZTgFHckfwbVXiAMj%2FtoPLGTd0NfXCvTs%2FOd4zY9OuY%2FTFNeMuCaRno5TrdAT91PduOeQi6uGT5hcgWfkN4WyEMoCPMrXHVDZOI%3D&X-Amz-Signature=de655c279dc37169c0920e3a3ad0151f04e785bdb19c252b5376ed62061c4c39&X-Amz-SignedHeaders=host&x-amz-checksum-crc32=AAAAAA%3D%3D&x-amz-sdk-checksum-algorithm=CRC32&x-id=PutObject
+    image_upload_key: galaxies/419b75b0-20e1-706b-f735-7974cb072797/00757881-ea4a-4888-ac95-e201b5c8277c/galaxy1.jpg
+    id_token: eyJraWQiOiJmOTB2TU8wbjJVUnRkU2pnaFZCL1psSEczUU5ubzNOcWkxZ3duY1c3MXdJPSIsImFsZyI6IlJTMjU2In0.eyJzdWIiOiI0MTliNzViMC0yMGUxLTcwNmItZjczNS03OTc0Y2IwNzI3OTciLCJjb2duaXRvOmdyb3VwcyI6WyJwdWJsaWMtdXNlciJdLCJlbWFpbF92ZXJpZmllZCI6dHJ1ZSwiaXNzIjoiaHR0cHM6Ly9jb2duaXRvLWlkcC51cy1lYXN0LTIuYW1hem9uYXdzLmNvbS91cy1lYXN0LTJfYWo3R08xRHdqIiwiY29nbml0bzp1c2VybmFtZSI6IjQxOWI3NWIwLTIwZTEtNzA2Yi1mNzM1LTc5NzRjYjA3Mjc5NyIsIm9yaWdpbl9qdGkiOiI3MGI1MmQ2YS02YWViLTRjZTUtYjU4Yy0wN2RhNGRkYzFjZDgiLCJhdWQiOiJhcjUycXBkYTV1ZmNidXV0ZW5ybWxzYmFqIiwiZXZlbnRfaWQiOiIyODcyOTdkNC1kOWE1LTQ3OGQtOWI5Zi00MmFiOThkYTQyYjYiLCJ0b2tlbl91c2UiOiJpZCIsImF1dGhfdGltZSI6MTc4MDM2ODY5MSwiZXhwIjoxNzgwMzcyMjkxLCJpYXQiOjE3ODAzNjg2OTEsImp0aSI6ImUyMjI0YmIwLWI0NjQtNGU1Zi04MDUxLTRhNzBlZTdkNGJlYyIsImVtYWlsIjoiamNvZGUyMDA2QGdtYWlsLmNvbSJ9.K65FGOQJt19EOUQm3oP9p-ENlfTdJ2PsK1lqrEWkZkGRUaLqSHknkeVfF5EfoK48NAfnQQ_mITeVJg1y3y03FHY879pyBVXFIwzcKmMyeE30igwTqKvrn7IcEO_hHcoWbzELA6-_2eRoV5xBE-hqsb2j-flcGNRFk4WtRk-r5Ehi_yC4CR9EEgdxVtr4il6bS3JqU59yIKk6Av002Vf2FIWpY06IA3pPOdsQ4Mx9Y1F2P_gAXrRR0ItvW3RaRyEYpU42TH4Pd3X0Ray5XXMHEabjbdtsV9KXrIm_KFxAyiL_xH1AUwn4ZbUm2jqAGqMIwsvHk3a_6ywYtNU6zr2cXQ
+    user_sub: 419b75b0-20e1-706b-f735-7974cb072797
+    appsync_graphql_realtime: wss://api.galaxymorph.com/graphql/realtime
+    appsync_graphql_host: api.galaxymorph.com
+    appsync_ws_header: eyJBdXRob3JpemF0aW9uIjoiZXlKcmFXUWlPaUptT1RCMlRVOHdiakpWVW5Sa1UycG5hRlpDTDFwc1NFY3pVVTV1YnpOT2NXa3haM2R1WTFjM01YZEpQU0lzSW1Gc1p5STZJbEpUTWpVMkluMC5leUp6ZFdJaU9pSTBNVGxpTnpWaU1DMHlNR1V4TFRjd05tSXRaamN6TlMwM09UYzBZMkl3TnpJM09UY2lMQ0pqYjJkdWFYUnZPbWR5YjNWd2N5STZXeUp3ZFdKc2FXTXRkWE5sY2lKZExDSmxiV0ZwYkY5MlpYSnBabWxsWkNJNmRISjFaU3dpYVhOeklqb2lhSFIwY0hNNkx5OWpiMmR1YVhSdkxXbGtjQzUxY3kxbFlYTjBMVEl1WVcxaGVtOXVZWGR6TG1OdmJTOTFjeTFsWVhOMExUSmZZV28zUjA4eFJIZHFJaXdpWTI5bmJtbDBienAxYzJWeWJtRnRaU0k2SWpReE9XSTNOV0l3TFRJd1pURXROekEyWWkxbU56TTFMVGM1TnpSallqQTNNamM1TnlJc0ltOXlhV2RwYmw5cWRHa2lPaUkzTUdJMU1tUTJZUzAyWVdWaUxUUmpaVFV0WWpVNFl5MHdOMlJoTkdSa1l6RmpaRGdpTENKaGRXUWlPaUpoY2pVeWNYQmtZVFYxWm1OaWRYVjBaVzV5Yld4elltRnFJaXdpWlhabGJuUmZhV1FpT2lJeU9EY3lPVGRrTkMxa09XRTFMVFEzT0dRdE9XSTVaaTAwTW1GaU9UaGtZVFF5WWpZaUxDSjBiMnRsYmw5MWMyVWlPaUpwWkNJc0ltRjFkR2hmZEdsdFpTSTZNVGM0TURNMk9EWTVNU3dpWlhod0lqb3hOemd3TXpjeU1qa3hMQ0pwWVhRaU9qRTNPREF6TmpnMk9URXNJbXAwYVNJNkltVXlNakkwWW1Jd0xXSTBOalF0TkdVMVppMDRNRFV4TFRSaE56QmxaVGRrTkdKbFl5SXNJbVZ0WVdsc0lqb2lhbU52WkdVeU1EQTJRR2R0WVdsc0xtTnZiU0o5Lks2NUZHT1FKdDE5RU9VUW0zb1A5cC1FTmxmVGRKMlBzSzFscXJFV2taa0dSVWFMcVNIa25rZVZmRjVFZm9LNDhOQWZuUVFfbUlUZVZKZzF5M3kwM0ZIWTg3OXB5QlZYRkl3emNLbU15ZUUzMGlnd1RxS3ZybjdJY0VPX2hIY29XYnpFTEE2LV8yZVJvVjV4QkUtaHFzYjJqLWZsY0dOUkZrNFd0UmstcjVFaGlfeUM0Q1I5RUVnZHhWdHI0aWw2YlMzSnFVNTl5SUtrNkF2MDAyVmYyRklXcFkwNklBM3BQT2RzUTRNeDlZMUYyUF9nQVhyUlIwSXR2VzNSYVJ5RVlwVTQyVEg0UGQzWDBSYXk1WFhNSEVhYmpiZHRzVjlLWHJJbV9LRnhBeWlMX3hIMUFVd240WmJVbTJqcUFHcU1Jd3N2SGszYV82eXdZdE5VNnpyMmNYUSIsImhvc3QiOiJhcGkuZ2FsYXh5bW9ycGguY29tIn0%3D
     appsync_ws_payload: e30%3D
