@@ -11,6 +11,8 @@ vi.mock('@galaxy-morph/shared', () => ({
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(body)
   }),
+  resolveCorsOrigin: () => '*',
+  withCors: (response: unknown) => response,
   POWERTOOLS_NAMESPACE: 'GalaxyMorph'
 }))
 
