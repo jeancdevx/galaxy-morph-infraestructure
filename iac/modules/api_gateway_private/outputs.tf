@@ -3,6 +3,11 @@ output "private_api_endpoint" {
   value       = aws_api_gateway_stage.private.invoke_url
 }
 
+output "private_stage_arn" {
+  description = "ARN of the private API Gateway stage — used for WAF WebACL association"
+  value       = aws_api_gateway_stage.private.arn
+}
+
 output "upload_api_function_name" {
   description = "Lambda function name for the upload API"
   value       = aws_lambda_function.upload_api.function_name
