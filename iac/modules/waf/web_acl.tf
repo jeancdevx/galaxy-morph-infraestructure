@@ -7,6 +7,46 @@ resource "aws_wafv2_web_acl" "this" {
     allow {}
   }
 
+  # Priority 5 — block requests that do not carry the CloudFront origin-verify secret.
+  dynamic "rule" {
+    for_each = var.origin_verify_header_value != "" ? [1] : []
+    content {
+      name     = "RequireOriginVerifyHeader"
+      priority = 5
+
+      action {
+        block {}
+      }
+
+      statement {
+        not_statement {
+          statement {
+            byte_match_statement {
+              search_string = var.origin_verify_header_value
+
+              field_to_match {
+                single_header { name = "x-origin-verify" }
+              }
+
+              text_transformation {
+                priority = 0
+                type     = "NONE"
+              }
+
+              positional_constraint = "EXACTLY"
+            }
+          }
+        }
+      }
+
+      visibility_config {
+        cloudwatch_metrics_enabled = true
+        metric_name                = "${var.name_prefix}-origin-verify"
+        sampled_requests_enabled   = true
+      }
+    }
+  }
+
   # Priority 10 — block requests from IPs with poor reputation (scrapers, botnets, TOR)
   rule {
     name     = "AWSManagedRulesAmazonIpReputationList"

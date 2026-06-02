@@ -24,3 +24,10 @@ variable "log_retention_days" {
   type        = number
   default     = 14
 }
+
+variable "origin_verify_header_value" {
+  description = "When non-empty, adds a rule that blocks requests missing the X-Origin-Verify header with this exact value. Used to enforce CloudFront-only access to API Gateway."
+  type        = string
+  default     = ""
+  sensitive   = true
+}
