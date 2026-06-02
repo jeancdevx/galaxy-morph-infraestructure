@@ -3,6 +3,7 @@ locals {
     images      = var.images_bucket_name
     checkpoints = var.checkpoints_bucket_name
     models      = var.models_bucket_name
+    spa         = var.spa_bucket_name
   }
 }
 
