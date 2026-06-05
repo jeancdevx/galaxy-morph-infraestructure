@@ -107,7 +107,8 @@ describe('handleHistory', () => {
     mockSend.mockResolvedValue({ Items: [], Count: 0 })
     const event = makeEvent({ queryStringParameters: { limit: '200' } })
     await handleHistory(event)
-    const callArg = mockSend.mock.calls[0][0]
-    expect(callArg.input?.Limit ?? callArg.Limit ?? 50).toBeLessThanOrEqual(50)
+    expect(mockSend).toHaveBeenCalled()
+    const callArg = mockSend.mock.calls[0]?.[0] as Record<string, unknown>
+    expect((callArg?.input as { Limit?: number })?.Limit ?? callArg?.Limit ?? 50).toBeLessThanOrEqual(50)
   })
 })

@@ -76,12 +76,12 @@ describe('generatePresignedUrls', () => {
   })
 
   it('generates unique batchId per call (same user, different keys)', async () => {
-    const [first] = await generatePresignedUrls('user-1', [
+    const firstResult = await generatePresignedUrls('user-1', [
       { filename: 'a.jpg', contentType: 'image/jpeg' }
     ])
-    const [second] = await generatePresignedUrls('user-1', [
+    const secondResult = await generatePresignedUrls('user-1', [
       { filename: 'a.jpg', contentType: 'image/jpeg' }
     ])
-    expect(first.key).not.toBe(second.key)
+    expect(firstResult[0]!.key).not.toBe(secondResult[0]!.key)
   })
 })

@@ -161,7 +161,8 @@ describe('signRequest', () => {
       TEST_CREDS,
       'us-east-2'
     )
-    const sigMatch = headers['authorization'].match(/Signature=([0-9a-f]+)/)
+    const sigMatch =
+      headers['authorization']?.match(/Signature=([0-9a-f]+)/) ?? null
     expect(sigMatch).not.toBeNull()
     expect(sigMatch![1]).toHaveLength(64)
   })
@@ -175,8 +176,8 @@ describe('signRequest', () => {
       TEST_CREDS,
       'us-east-2'
     )
-    const sig1 = h1['authorization'].match(/Signature=([0-9a-f]+)/)?.[1]
-    const sig2 = h2['authorization'].match(/Signature=([0-9a-f]+)/)?.[1]
+    const sig1 = h1['authorization']?.match(/Signature=([0-9a-f]+)/)?.[1]
+    const sig2 = h2['authorization']?.match(/Signature=([0-9a-f]+)/)?.[1]
     expect(sig1).not.toBe(sig2)
   })
 
@@ -228,9 +229,10 @@ describe('signRequest', () => {
       TEST_CREDS,
       'us-east-2'
     )
-    const actualSig = headers['authorization'].match(
+    const actualSig = headers['authorization']?.match(
       /Signature=([0-9a-f]+)/
     )?.[1]
-    expect(actualSig).toMatch(/^[0-9a-f]{64}$/)
+    expect(actualSig).toBeDefined()
+    expect(actualSig!).toMatch(/^[0-9a-f]{64}$/)
   })
 })
