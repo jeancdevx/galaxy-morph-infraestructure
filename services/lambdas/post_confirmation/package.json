@@ -5,6 +5,8 @@
   "main": "dist/index.js",
   "scripts": {
     "build": "esbuild src/index.ts --bundle --minify --platform=node --target=node22 --outfile=dist/index.js && cd dist && zip -r function.zip index.js",
+    "clean": "rm -rf dist",
+    "typecheck": "tsc --noEmit",
     "test": "vitest run",
     "test:coverage": "vitest run --coverage"
   },
