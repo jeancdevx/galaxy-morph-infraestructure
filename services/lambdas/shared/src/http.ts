@@ -3,7 +3,7 @@ import type { APIGatewayProxyEvent, APIGatewayProxyResult } from 'aws-lambda'
 export function resolveCorsOrigin(event: APIGatewayProxyEvent): string {
   const allowed = (process.env.CORS_ALLOW_ORIGINS ?? '*')
     .split(',')
-    .map(o => o.trim())
+    .map((o: string) => o.trim())
     .filter(Boolean)
 
   if (allowed.includes('*')) return '*'
