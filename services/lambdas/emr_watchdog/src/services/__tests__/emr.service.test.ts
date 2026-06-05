@@ -47,7 +47,7 @@ describe('startStreamingJob', () => {
     expect(jobRunId).toBe('jr-abc123')
     expect(mockSend).toHaveBeenCalledTimes(2)
 
-    const emrCall = mockSend.mock.calls[0][0]
+    const emrCall = mockSend.mock.calls[0]?.[0] as StartJobRunCommand
     expect(emrCall).toBeInstanceOf(StartJobRunCommand)
     expect(emrCall.input.applicationId).toBe('app-123')
     expect(emrCall.input.executionTimeoutMinutes).toBe(10080)
@@ -60,7 +60,7 @@ describe('startStreamingJob', () => {
 
     await startStreamingJob()
 
-    const ssmCall = mockSend.mock.calls[1][0]
+    const ssmCall = mockSend.mock.calls[1]?.[0] as PutParameterCommand
     expect(ssmCall).toBeInstanceOf(PutParameterCommand)
     expect(ssmCall.input.Name).toBe('/galaxy-morph-dev/emr/current-job-run-id')
     expect(ssmCall.input.Value).toBe('jr-xyz789')
@@ -74,9 +74,9 @@ describe('startStreamingJob', () => {
 
     await startStreamingJob()
 
-    const emrCall = mockSend.mock.calls[0][0]
+    const emrCall = mockSend.mock.calls[0]?.[0] as StartJobRunCommand
     const sparkParams: string =
-      emrCall.input.jobDriver.sparkSubmit.sparkSubmitParameters
+      emrCall.input.jobDriver?.sparkSubmit?.sparkSubmitParameters ?? ''
     expect(sparkParams).toContain(
       '--conf spark.app.sagemaker_endpoint_name=galaxy-morph-dev-endpoint'
     )
