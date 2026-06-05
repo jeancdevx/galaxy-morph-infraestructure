@@ -6,6 +6,7 @@
   "scripts": {
     "build": "esbuild src/launcher.ts --bundle --minify --platform=node --target=node22 --outfile=dist/launcher.js && esbuild src/watchdog.ts --bundle --minify --platform=node --target=node22 --outfile=dist/watchdog.js && cd dist && zip -r function.zip launcher.js watchdog.js",
     "clean": "rm -rf dist",
+    "typecheck": "tsc --noEmit",
     "test": "vitest run",
     "test:coverage": "vitest run --coverage"
   },
